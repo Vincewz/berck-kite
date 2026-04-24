@@ -245,63 +245,7 @@ async function initWindMap() {
   }
 }
 
-// ── Radar pluie RainViewer ────────────────────────────────────────────────────
-let rainMap = null, rainFrames = [], rainIdx = 0, rainTimer = null;
 
-async function initRainMap() {
-  const el = document.getElementById('rain-map');
-  if (!el) return;
-
-  if (!rainMap) {
-    rainMap = L.map('rain-map', {
-      center: [LAT, LNG], zoom: 7,
-      zoomControl: false, attributionControl: false,
-    });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-      maxZoom: 14,
-    }).addTo(rainMap);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
-      maxZoom: 14, pane: 'shadowPane',
-    }).addTo(rainMap);
-    L.circleMarker([LAT, LNG], {
-      radius: 6, color: '#06b6d4', fillColor: '#06b6d4', fillOpacity: 1, weight: 2,
-    }).addTo(rainMap);
-  }
-
-  try {
-    const api = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const data = await api.json();
-    const past = (data.radar?.past || []).slice(-6);  // 6 dernières frames (30 min)
-    const nowF = data.radar?.nowcast || [];
-    rainFrames = [...past, ...nowF.slice(0, 3)];      // + 15 min de prévision
-
-    let currentLayer = null;
-    let i = 0;
-
-    function showFrame(idx) {
-      const frame = rainFrames[idx];
-      if (!frame) return;
-      const url = `${data.host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`;
-      const newLayer = L.tileLayer(url, { opacity: 0.7, maxZoom: 14 });
-      newLayer.addTo(rainMap);
-      newLayer.on('load', () => {
-        if (currentLayer) rainMap.removeLayer(currentLayer);
-        currentLayer = newLayer;
-      });
-    }
-
-    showFrame(0);
-    if (rainTimer) clearInterval(rainTimer);
-    rainTimer = setInterval(() => {
-      i = (i + 1) % rainFrames.length;
-      showFrame(i);
-    }, 600);
-
-    setTimeout(() => rainMap.invalidateSize(), 100);
-  } catch (e) {
-    console.warn('Rain map error:', e);
-  }
-}
 
 // ── composant principal ───────────────────────────────────────────────────────
 createApp({
@@ -599,7 +543,6 @@ createApp({
         await nextTick();
         drawChart();
         setTimeout(() => initWindMap(), 150);
-        setTimeout(() => initRainMap(), 300);
       } catch (e) {
         error.value = e.message;
       } finally {

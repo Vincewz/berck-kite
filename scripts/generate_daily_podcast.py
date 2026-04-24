@@ -25,11 +25,10 @@ TTS_RAW.parent.mkdir(exist_ok=True)
 # ── Voix ElevenLabs — meilleures options pour le français ─────────────────────
 # Classées par naturalité en français (eleven_multilingual_v2)
 FRENCH_VOICES = [
-    ("XB0fDUnXU5powFXDhCwa", "Charlotte"),   # Voix féminine chaleureuse, excellent FR
-    ("N2lVS1w4EtoT3dr4eOWO", "Callum"),      # Voix masculine naturelle, bon FR
-    ("Xb7hH8MSUJpSbSDYk0k2", "Alice"),       # Voix féminine douce, bon FR
-    ("TX3LPaxmHKxFdv7VOQHJ", "Liam"),        # Voix masculine décontractée
-    ("pNInz6obpgDQGcFmaJgB", "Adam"),        # Fallback
+    ("SAz9YHcvj6GT2YYXdXww", "River"),       # Voix choisie — calme, naturelle
+    ("N2lVS1w4EtoT3dr4eOWO", "Callum"),      # Fallback 1
+    ("TX3LPaxmHKxFdv7VOQHJ", "Liam"),        # Fallback 2
+    ("pNInz6obpgDQGcFmaJgB", "Adam"),        # Fallback final
 ]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -96,9 +95,9 @@ Vent {cond['dir']}, {cond['kt']} nœuds, rafales {cond['gkt']} nœuds.
 Vagues {cond['wave_h']}m ({cond['wave_p']}s). {cond['weather'].capitalize()}, {cond['temp']}°C.
 
 Rédige un bulletin oral de 45 à 55 secondes (environ 110 mots).
-Commence par situer le contexte du jour (météo, ambiance), puis décris les conditions.
-Conclus simplement sur ce que ça implique pour la plage.
-Texte brut uniquement, sans ponctuation de scène ni tirets."""
+Commence par situer le contexte du jour, puis décris les conditions, conclus simplement.
+IMPORTANT : texte brut uniquement. Zéro titre, zéro gras, zéro tiret, zéro astérisque.
+Commence directement par la première phrase du bulletin."""
 
     r = requests.post(
         "https://api.mistral.ai/v1/chat/completions",

@@ -56,6 +56,22 @@
           </div>
           <div class="hero-gust">Rafales <b>{{ toKt(current.wind_gusts_10m) }} nœuds</b></div>
         </div>
+
+        <!-- ── PODCAST PLAYER ── -->
+        <div class="podcast-bar" id="podcastBar">
+          <button class="podcast-btn" id="podcastBtn" onclick="togglePodcast()">
+            <span id="podcastIcon">▶</span>
+          </button>
+          <div class="podcast-info">
+            <span class="podcast-label">🎙️ Report du jour</span>
+            <div class="podcast-progress">
+              <div class="podcast-fill" id="podcastFill"></div>
+            </div>
+          </div>
+          <audio id="podcastAudio" src="podcast/today.mp3" preload="none"
+            ontimeupdate="updatePodcastProgress()"
+            onended="podcastEnded()"></audio>
+        </div>
       </section>
 
       <!-- ═══════════════════════════════════════════
@@ -274,5 +290,38 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.1/dist/leaflet-velocity.min.js"></script>
   <script src="app.js"></script>
+  <script>
+    // ── Podcast player ──────────────────────────────────────────────────────
+    function togglePodcast() {
+      const audio = document.getElementById('podcastAudio');
+      const icon  = document.getElementById('podcastIcon');
+      if (!audio) return;
+      if (audio.paused) {
+        audio.play().then(() => { icon.textContent = '❚❚'; }).catch(() => {});
+      } else {
+        audio.pause();
+        icon.textContent = '▶';
+      }
+    }
+    function updatePodcastProgress() {
+      const audio = document.getElementById('podcastAudio');
+      const fill  = document.getElementById('podcastFill');
+      if (!audio || !fill || !audio.duration) return;
+      fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+    }
+    function podcastEnded() {
+      const icon = document.getElementById('podcastIcon');
+      const fill = document.getElementById('podcastFill');
+      if (icon) icon.textContent = '▶';
+      if (fill) fill.style.width = '0%';
+    }
+    // Masquer le player si le fichier n'existe pas
+    window.addEventListener('DOMContentLoaded', () => {
+      const audio = document.getElementById('podcastAudio');
+      const bar   = document.getElementById('podcastBar');
+      if (!audio || !bar) return;
+      audio.addEventListener('error', () => { bar.style.display = 'none'; });
+    });
+  </script>
 </body>
 </html>

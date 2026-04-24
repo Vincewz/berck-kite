@@ -144,6 +144,35 @@ nav {
 .hero-kite { font-size: .82rem; color: rgba(255,255,255,.5); }
 .hero-kite b { color: #7ac8ee; font-weight: 600; }
 
+/* ── PODCAST PLAYER ──────────────────────────────────────────────────────── */
+.podcast-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 18px;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(12px);
+  border-radius: 40px;
+  padding: 8px 16px 8px 8px;
+  max-width: 320px;
+}
+.podcast-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.9); border: none; cursor: pointer;
+  font-size: 1rem; line-height: 1; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, background .15s;
+}
+.podcast-btn:hover { background: #fff; transform: scale(1.08); }
+.podcast-btn:active { transform: scale(.95); }
+.podcast-info { flex: 1; min-width: 0; }
+.podcast-label { font-size: .72rem; color: rgba(255,255,255,.75); display: block; margin-bottom: 4px; }
+.podcast-progress {
+  height: 3px; background: rgba(255,255,255,.2); border-radius: 2px; overflow: hidden;
+}
+.podcast-fill {
+  height: 100%; width: 0%; background: rgba(255,255,255,.85);
+  border-radius: 2px; transition: width .5s linear;
+}
+
 /* ── QUESTIONS GRID ──────────────────────────────────────────────────────── */
 .questions-grid {
   display: grid;

@@ -1,0 +1,41 @@
+name: 🎙️ Podcast quotidien
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 6h00 heure Paris (UTC+1 hiver, UTC+2 été)
+  workflow_dispatch:        # Déclenchement manuel possible
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ffmpeg
+        run: sudo apt-get install -y ffmpeg
+
+      - name: Install Python deps
+        run: pip install requests
+
+      - name: Generate podcast
+        env:
+          MISTRAL_API_KEY:   ${{ secrets.MISTRAL_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: python scripts/generate_daily_podcast.py
+
+      - name: Commit podcast
+        run: |
+          git config user.name  "KiteBerck Bot"
+          git config user.email "bot@kiteberck.fr"
+          git add podcast/today.mp3 podcast/tts/
+          git diff --cached --quiet || git commit -m "🎙️ Podcast $(date +'%Y-%m-%d')"
+          git push

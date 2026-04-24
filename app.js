@@ -550,13 +550,47 @@ createApp({
     });
     onUnmounted(() => { clearInterval(refreshTimer); clearInterval(tideTimer); });
 
+    // ── Partage conditions ────────────────────────────────────────────────────
+    const shareToast = ref(false);
+    function shareConditions() {
+      if (!current.value) return;
+      const c = current.value;
+      const kt  = toKt(c.wind_speed_10m);
+      const gkt = toKt(c.wind_gusts_10m);
+      const dir = dirLabel(c.wind_direction_10m);
+      const now = new Date();
+      const jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+      const mois  = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      const date  = `${jours[now.getDay()]} ${now.getDate()} ${mois[now.getMonth()]}`;
+      const wh = waveInfo.value.h !== '—' ? `\n🌊 Vagues ${waveInfo.value.h}m` : '';
+      const tide = tides.value.length ? (() => {
+        const pm = tides.value.find(t => t.type === 'HW');
+        const bm = tides.value.find(t => t.type === 'LW');
+        const parts = [];
+        if (pm) parts.push(`PM ${pm.timeStr} · ${pm.hStr}m`);
+        if (bm) parts.push(`BM ${bm.timeStr} · ${bm.hStr}m`);
+        return parts.length ? `\n🕐 ${parts.join(' | ')}` : '';
+      })() : '';
+      const temp = `\n🌡️ ${Math.round(c.temperature_2m)}°C`;
+      const text = `🪁 Berck-sur-Mer — ${date}\n💨 ${dir} · ${kt} nœuds · rafales ${gkt}${wh}${temp}${tide}\n\nhttps://kiteberck.fr`;
+
+      if (navigator.share) {
+        navigator.share({ text }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text).then(() => {
+          shareToast.value = true;
+          setTimeout(() => { shareToast.value = false; }, 2500);
+        });
+      }
+    }
+
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
       WEBCAMS, heroClass,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
-      timeAgo,
-      fetchAll, dirLabel, speedColor, snapUrl, openCam, toKt,
+      timeAgo, shareToast,
+      fetchAll, dirLabel, speedColor, snapUrl, openCam, toKt, shareConditions,
     };
   },
 }).mount('#app');

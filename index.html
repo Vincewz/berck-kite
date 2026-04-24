@@ -57,6 +57,14 @@
           <div class="hero-gust">Rafales <b>{{ toKt(current.wind_gusts_10m) }} nœuds</b></div>
         </div>
 
+        <!-- ── BOUTON PARTAGE ── -->
+        <button class="share-btn" @click="shareConditions" title="Partager les conditions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+
         <!-- ── PODCAST PLAYER ── -->
         <div class="podcast-bar" id="podcastBar">
           <button class="podcast-btn" id="podcastBtn" onclick="togglePodcast()">
@@ -261,6 +269,9 @@
       <p>⚠ {{ error }}</p>
       <button @click="fetchAll">Réessayer</button>
     </div>
+
+    <!-- TOAST PARTAGE -->
+    <div class="share-toast" :class="{ visible: shareToast }">✓ Copié dans le presse-papier</div>
 
     <!-- MODAL CAM -->
     <div class="modal-bg" v-if="activeCam" @click.self="activeCam = null">

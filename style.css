@@ -72,6 +72,7 @@ nav {
 
 /* ── HERO ────────────────────────────────────────────────────────────────── */
 .hero {
+  position: relative;
   padding: 36px 20px 30px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   position: relative; overflow: hidden;
@@ -143,6 +144,24 @@ nav {
 .hero-gust b { color: #f0b050; font-weight: 600; }
 .hero-kite { font-size: .82rem; color: rgba(255,255,255,.5); }
 .hero-kite b { color: #7ac8ee; font-weight: 600; }
+
+/* ── BOUTON PARTAGE ──────────────────────────────────────────────────────── */
+.share-btn {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,.15); border: none; border-radius: 50%;
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: white; transition: background .2s;
+}
+.share-btn:hover { background: rgba(255,255,255,.25); }
+.share-btn svg { width: 18px; height: 18px; }
+
+.share-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: #1e3a5f; color: white; padding: 10px 20px; border-radius: 24px;
+  font-size: .9rem; font-weight: 500; opacity: 0; transition: opacity .25s, transform .25s;
+  pointer-events: none; z-index: 9999; white-space: nowrap;
+}
+.share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ── PODCAST PLAYER ──────────────────────────────────────────────────────── */
 .podcast-bar {

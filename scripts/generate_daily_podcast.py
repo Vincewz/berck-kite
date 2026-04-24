@@ -154,18 +154,28 @@ def fetch_all(now: datetime):
 
 # ── 2. Mistral — contexte maximal, script naturel ────────────────────────────
 SYSTEM_PROMPT = """Tu es la voix du bulletin météo kite de Berck-sur-Mer, diffusé chaque matin sur une web radio locale.
-Ton rôle : transformer des données météo en un bulletin oral vivant, précis et agréable à écouter.
+Ton rôle : énoncer les conditions météo et kite de la journée de façon claire, précise et agréable à écouter.
 
 Règles absolues :
 - Texte brut uniquement : zéro titre, zéro gras, zéro tiret, zéro astérisque, zéro liste
 - Commence directement par la première phrase parlée
 - Durée cible : 55 à 70 secondes à l'oral (130 à 160 mots)
 - Langue : français courant, naturel, sans jargon technique excessif
-- Ton : celui d'un bon journaliste météo — précis, chaleureux, jamais forcé
-- Structure libre mais logique : accroche → conditions du moment → évolution du jour → demain → conclusion courte
-- Mentionne les chiffres clés mais intègre-les dans des phrases fluides
-- Si vent de terre (offshore) : le signaler clairement, c'est une info de sécurité
-- Si conditions exceptionnelles (très fort ou très faible vent) : le noter"""
+- Ton : celui d'un présentateur météo radio — factuel, neutre, posé
+
+CONTENU — uniquement des faits :
+- Conditions actuelles : vent, rafales, direction, vagues, météo, température
+- Évolution dans la journée heure par heure si notable
+- Comparaison avec la veille si pertinente (plus fort / plus faible / similaire)
+- Aperçu de demain : chiffres bruts
+- Si vent de terre (offshore) : le mentionner factuellement, sans dramatiser
+
+INTERDIT — ne jamais inclure :
+- Recommandations ("prévoyez", "pensez à", "vérifiez votre matériel")
+- Conseils de sécurité ou de pratique ("kitez en sécurité", "idéal pour les débutants")
+- Souhaits ou formules de conclusion ("bon vent", "bonne session", "à demain")
+- Jugements de valeur sur les conditions ("parfait pour", "agréable pour")
+- Toute phrase qui dit à l'auditeur quoi faire ou ressentir"""
 
 def generate_script(data: dict, date_str: str) -> str:
     n = data["now"]

@@ -224,11 +224,9 @@
             <div class="webcam-preview">
               <img :src="snapUrl(cam.slug)" :alt="cam.label"
                 @load="e => e.target.classList.add('loaded')"
-                @error="e => { e.target.src = snapUrl(cam.slug, 1); e.target.onerror = () => e.target.style.display='none' }"
+                @error="e => { if(!e.target._tried){ e.target._tried=true; e.target.src=snapUrl(cam.slug,1) } else { e.target.src='cams/'+cam.slug+'.jpg' } }"
                 loading="lazy"/>
-              <div class="webcam-placeholder">
-                <span class="webcam-play">▶</span>
-              </div>
+              <div class="webcam-live-badge">● LIVE</div>
             </div>
             <div class="webcam-name">{{ cam.label }}</div>
           </div>
@@ -246,10 +244,21 @@
     <!-- MODAL CAM -->
     <div class="modal-bg" v-if="activeCam" @click.self="activeCam = null">
       <div class="modal-box">
-        <button class="modal-close" @click="activeCam = null">✕</button>
-        <div class="modal-title">{{ activeCam.label }}</div>
-        <iframe :src="`https://www.skaping.com/berck-sur-mer/${activeCam.slug}`"
-          frameborder="0" allowfullscreen></iframe>
+        <div class="modal-header">
+          <div class="modal-title">
+            <span class="modal-live-dot"></span>
+            {{ activeCam.label }}
+          </div>
+          <button class="modal-close" @click="activeCam = null">✕</button>
+        </div>
+        <div class="modal-iframe-wrap">
+          <iframe :src="`https://www.skaping.com/berck-sur-mer/${activeCam.slug}`"
+            frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div class="modal-footer">
+          <span>📍 Berck-sur-Mer</span>
+          <a :href="`https://www.skaping.com/berck-sur-mer/${activeCam.slug}`" target="_blank">Ouvrir ↗</a>
+        </div>
       </div>
     </div>
 

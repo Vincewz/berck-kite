@@ -429,38 +429,57 @@ nav {
   opacity: 0; transition: opacity .3s;
 }
 .webcam-preview img.loaded { opacity: 1; }
-.webcam-placeholder {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-.webcam-play {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .8rem; color: white; padding-left: 2px;
+.webcam-live-badge {
+  position: absolute; top: 6px; left: 6px;
+  background: rgba(239,68,68,.85); color: white;
+  font-size: .6rem; font-weight: 700; letter-spacing: .04em;
+  padding: 2px 6px; border-radius: 4px;
+  backdrop-filter: blur(4px);
 }
 .webcam-name { font-size: .63rem; padding: 5px 8px; color: var(--muted); font-weight: 600; }
 
 /* ── MODAL ───────────────────────────────────────────────────────────────── */
 .modal-bg {
-  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999;
+  position: fixed; inset: 0; background: rgba(5,15,28,.7); z-index: 999;
   display: flex; align-items: flex-end;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(6px);
 }
 .modal-box {
-  width: 100%; background: var(--card);
+  width: 100%; background: #0d1f32;
   border-radius: 20px 20px 0 0;
-  border: 1px solid var(--border); border-bottom: none;
-  overflow: hidden; position: relative;
+  overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.modal-title {
+  font-weight: 700; font-size: .92rem; color: white;
+  display: flex; align-items: center; gap: 8px;
+}
+.modal-live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
+  animation: livePulse 1.2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
 }
 .modal-close {
-  position: absolute; top: 12px; right: 12px; z-index: 10;
-  background: var(--s1); border: 1px solid var(--border);
-  color: var(--muted); width: 28px; height: 28px; border-radius: 50%;
-  font-size: .8rem; cursor: pointer;
+  background: rgba(255,255,255,.1); border: none;
+  color: rgba(255,255,255,.7); width: 30px; height: 30px; border-radius: 50%;
+  font-size: .85rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-.modal-title { padding: 14px 48px 12px 16px; font-weight: 700; font-size: .88rem; color: var(--blue); border-bottom: 1px solid var(--border); }
-.modal-box iframe { display: block; width: 100%; height: 56vw; min-height: 220px; }
+.modal-close:hover { background: rgba(255,255,255,.2); color: white; }
+.modal-iframe-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+.modal-iframe-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+.modal-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  font-size: .72rem; color: rgba(255,255,255,.45);
+}
+.modal-footer a { color: var(--blue); text-decoration: none; font-weight: 600; }
 
 /* ── MAP ─────────────────────────────────────────────────────────────────── */
 #berck-map {

@@ -155,12 +155,16 @@ def fetch_all(now: datetime):
 
     # Demain résumé
     tomorrow_idx = 1  # daily[1] = demain
+    # Direction dominante demain : moyenne des heures 24-36
+    tom_dirs = [float(hr["wind_direction_10m"][i]) for i in range(24, min(36, len(hr["wind_direction_10m"])))]
+    tom_dir_avg = sum(tom_dirs) / len(tom_dirs) if tom_dirs else 0
     tomorrow_data = {
         "weather": wmo_label(dl["weather_code"][tomorrow_idx]),
         "kt_max":  to_kt(dl["wind_speed_10m_max"][tomorrow_idx]),
         "gkt_max": to_kt(dl["wind_gusts_10m_max"][tomorrow_idx]),
         "temp_max": round(float(dl["temperature_2m_max"][tomorrow_idx])),
         "temp_min": round(float(dl["temperature_2m_min"][tomorrow_idx])),
+        "dir":      dir_label(tom_dir_avg),
     }
 
     # Lever/coucher soleil
@@ -204,17 +208,17 @@ Règles absolues :
 - Ton : celui d'un présentateur météo radio — factuel, neutre, posé
 
 CONTENU — uniquement des faits :
+- Commencer par la date du jour
 - Conditions actuelles : vent (force ET orientation cardinale), rafales, vagues, météo, température
-- Marées : prochains PM/BM avec heure et hauteur
+- Prochaine pleine mer et prochaine basse mer (heure + hauteur)
 - Évolution dans la journée heure par heure si notable
-- Comparaison avec la veille si pertinente (plus fort / plus faible / similaire)
-- Aperçu de demain : chiffres bruts
+- Aperçu de demain : météo, température, vent avec son orientation cardinale
 - Si vent de terre (offshore) : le mentionner factuellement, sans dramatiser
+- Terminer obligatoirement par : "Bonne journée les Berckois."
 
 INTERDIT — ne jamais inclure :
 - Recommandations ("prévoyez", "pensez à", "vérifiez votre matériel")
 - Conseils de sécurité ou de pratique ("kitez en sécurité", "idéal pour les débutants")
-- Souhaits ou formules de conclusion ("bon vent", "bonne session", "à demain")
 - Jugements de valeur sur les conditions ("parfait pour", "agréable pour")
 - Toute phrase qui dit à l'auditeur quoi faire ou ressentir"""
 
@@ -232,10 +236,13 @@ def generate_script(data: dict, date_str: str) -> str:
             slots.append(f"{h['h']} : {h['kt']}kt {h['dir']}, {h['weather']}")
         evolution = " | ".join(slots)
 
-    # Marées
+    # Marées — prochaine PM et prochaine BM uniquement
+    tides = data.get("tides", [])
+    next_pm = next((td for td in tides if td["type"] == "PM"), None)
+    next_bm = next((td for td in tides if td["type"] == "BM"), None)
     tides_str = ""
-    for td in data.get("tides", []):
-        tides_str += f"  {td['type']} à {td['timeStr']} — {td['h']}m\n"
+    if next_pm: tides_str += f"  Pleine mer : {next_pm['timeStr']} — {next_pm['h']}m\n"
+    if next_bm: tides_str += f"  Basse mer  : {next_bm['timeStr']} — {next_bm['h']}m\n"
 
     offshore_note = f"\n⚠ ALERTE OFFSHORE : {n['offshore']}" if n['offshore'] else ""
 
@@ -257,7 +264,7 @@ MARÉES (prochains PM/BM) :
 
 DEMAIN :
   {t['weather'].capitalize()}, {t['temp_min']}–{t['temp_max']}°C
-  Vent max : {t['kt_max']} nœuds, rafales {t['gkt_max']} nœuds
+  Vent : {t['dir']} — max {t['kt_max']} nœuds, rafales {t['gkt_max']} nœuds
 
 Rédige le bulletin maintenant :"""
 
@@ -285,6 +292,24 @@ Rédige le bulletin maintenant :"""
 
 # ── 3. OpenAI TTS ─────────────────────────────────────────────────────────────
 def text_to_speech(script: str, out_path: Path) -> str:
+    # Essai 1 : gpt-4o-mini-tts avec instructions accent français
+    r = requests.post(
+        "https://api.openai.com/v1/audio/speech",
+        headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+        json={
+            "model": "gpt-4o-mini-tts",
+            "voice": "onyx",
+            "input": script,
+            "instructions": "Tu parles français avec un accent français natif, parfaitement naturel. Prononce tous les mots en français. Débit posé, ton neutre de présentateur radio.",
+        },
+        timeout=60,
+    )
+    if r.status_code == 200:
+        out_path.write_bytes(r.content)
+        print(f"  gpt-4o-mini-tts onyx OK — {len(r.content)//1024}KB")
+        return "onyx"
+    # Fallback : tts-1-hd
+    print(f"  gpt-4o-mini-tts echec {r.status_code}, fallback tts-1-hd")
     r = requests.post(
         "https://api.openai.com/v1/audio/speech",
         headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
@@ -293,7 +318,7 @@ def text_to_speech(script: str, out_path: Path) -> str:
     )
     if r.status_code == 200:
         out_path.write_bytes(r.content)
-        print(f"  OpenAI onyx OK — {len(r.content)//1024}KB")
+        print(f"  tts-1-hd onyx OK — {len(r.content)//1024}KB")
         return "onyx"
     raise RuntimeError(f"OpenAI TTS echec {r.status_code}: {r.text[:100]}")
 

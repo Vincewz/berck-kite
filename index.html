@@ -36,7 +36,9 @@
       <!-- ═══════════════════════════════════════════
            HERO — vitesse + statut en un coup d'œil
       ════════════════════════════════════════════ -->
-      <section class="hero" :class="heroClass">
+      <section class="hero" :class="heroClass"
+        :style="heroBg ? { backgroundImage: 'url(' + heroBg + ')', backgroundPosition: 'center 38%' } : {}"
+      >
         <div class="hero-main">
           <div class="hero-speed">{{ toKt(current.wind_speed_10m) }}</div>
           <div class="hero-unit">nœuds</div>

@@ -260,7 +260,24 @@ createApp({
     const activeCam  = ref(null);
     const tides   = ref([]);
     const tideMs  = ref(Date.now());
+    const heroBg  = ref(null);
     let chart = null, refreshTimer = null, tideTimer = null;
+
+    // ── Fond hero = dernière image webcam Éole disponible ────────────────────
+    function loadHeroBg() {
+      const tryOffset = (offset) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload  = () => resolve(snapUrl('eole', offset));
+        img.onerror = () => reject();
+        img.src = snapUrl('eole', offset);
+      });
+      // Essaie l'heure actuelle, puis -1h, -2h
+      tryOffset(0)
+        .catch(() => tryOffset(1))
+        .catch(() => tryOffset(2))
+        .then(url => { heroBg.value = url; })
+        .catch(() => {});
+    }
 
     // ── marée en temps réel ───────────────────────────────────────────────
     const tideNow = computed(() => {
@@ -554,6 +571,7 @@ createApp({
 
     onMounted(() => {
       fetchAll();
+      loadHeroBg();
       refreshTimer = setInterval(fetchAll, 10 * 60_000);
       tideTimer    = setInterval(() => { tideMs.value = Date.now(); }, 60_000);
     });
@@ -595,7 +613,7 @@ createApp({
 
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
-      WEBCAMS, heroClass,
+      WEBCAMS, heroClass, heroBg,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
       timeAgo, shareToast,

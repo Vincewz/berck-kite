@@ -35,6 +35,20 @@ function speedColor(kmh) {
   return k ? k.color : '#ef4444';
 }
 
+function toKt(kmh) { return kmh != null ? Math.round(kmh / 1.852) : 0; }
+
+function wmoIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2)  return '🌤️';
+  if (code <= 3)  return '☁️';
+  if (code <= 48) return '🌫️';
+  if (code <= 57) return '🌦️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌦️';
+  return '⛈️';
+}
+
 function snapUrl(slug, offset = 0) {
   const d = new Date(Date.now() - offset * 3_600_000);
   const y = d.getFullYear();
@@ -251,8 +265,11 @@ createApp({
       const h = tideHeight(tideMs.value);
       const MIN_H = 0.5, MAX_H = 9.5;
       const pct = Math.max(0, Math.min(1, (h - MIN_H) / (MAX_H - MIN_H)));
-      const tideY = Math.round(58 * (1 - pct)); // y=0 = PM, y=58 = BM (dans SVG 0-68)
-      return { h: +h.toFixed(1), pct, tideY };
+      const raw = tideCoeff(tideMs.value); // 0=mortes → 1=vives
+      const coeff = Math.round(20 + raw * 100);
+      const coeffLabel = coeff >= 80 ? 'Vives-eaux' : coeff >= 55 ? 'Moyennes eaux' : 'Mortes-eaux';
+      const coeffCls   = coeff >= 80 ? 'coeff-high' : coeff >= 55 ? 'coeff-mid' : 'coeff-low';
+      return { h: +h.toFixed(1), pct, coeff, coeffLabel, coeffCls };
     });
 
     // ── computed ──────────────────────────────────────────────────────────────
@@ -326,64 +343,48 @@ createApp({
       if (!daily.value) return [];
       const todayStr = localDateStr(new Date());
       return daily.value.time.slice(0, 8).map((t, i) => {
-        // diff en jours par comparaison de chaînes de date
         const dA = new Date(todayStr + 'T00:00:00');
-        const dB = new Date(t      + 'T00:00:00');
+        const dB = new Date(t + 'T00:00:00');
         const diff = Math.round((dB - dA) / 86400000);
         if (diff < 0) return null;
         const speed = daily.value.wind_speed_10m_max[i];
-        if (speed == null) return null; // modèle sans données pour ce jour
-        const k = KITE_GUIDE.find(z => speed >= z.min && speed < z.max) || KITE_GUIDE[0];
-        const go = k.go;
-        // Vérification direction offshore — même logique que classifyWindOrigin
+        if (speed == null) return null;
         const dir = daily.value.wind_direction_10m_dominant[i];
         const wo  = dir != null ? classifyWindOrigin(dir) : { offshore: false };
-        const isOffshore = wo.offshore === true;
-        const isPartial  = wo.offshore === 'partial';
         const d = new Date(t + 'T00:00:00');
         const label = diff === 0 ? 'Auj.' : diff === 1 ? 'Dem.'
           : d.toLocaleDateString('fr-FR', { weekday: 'short' });
         return {
           label,
-          speed: Math.round(speed),
-          // Offshore = toujours NO GO, partial = avertissement
-          icon: isOffshore ? '🚨'
-              : isPartial  ? '⚠️'
-              : (go === 'best' || go === true) ? '✅'
-              : go === 'expert' ? '⚠️'
-              : go === 'light'  ? '🟡'
-              : '❌',
-          cls:  isOffshore ? 'wday-nogo'
-              : isPartial  ? 'wday-expert'
-              : (go === 'best' || go === true) ? 'wday-go'
-              : go === 'expert' ? 'wday-expert'
-              : 'wday-nogo',
+          kt: toKt(speed),
+          dir: dir != null ? dirLabel(dir) : '—',
+          offshore: wo.offshore,
+          color: speedColor(speed),
         };
       }).filter(Boolean);
     });
 
-    // Q5 — pluie ?
-    const rainInfo = computed(() => {
-      if (!hourly.value?.precipitation) return { icon: '?', answer: '—', sub: '', cls: '' };
+    // Météo à venir (remplace rainInfo)
+    const weatherForecast = computed(() => {
+      if (!hourly.value?.temperature_2m) return null;
       const now = Date.now();
       const times = hourly.value.time;
-      const precip = hourly.value.precipitation;
-      const idx = times.findIndex(t => new Date(t).getTime() >= now);
-      if (idx < 0) return { icon: '☀️', answer: 'Sec', sub: '', cls: 'q-go' };
-
-      const next8 = precip.slice(idx, idx + 8);
-      const rainIdx = next8.findIndex(p => p > 0.2);
-      if (rainIdx < 0)
-        return { icon: '☀️', answer: 'Sec pour la session', sub: 'Pas de précipitations prévues', cls: 'q-go' };
-
-      const rainTime = times[idx + rainIdx];
-      const rainH = new Date(rainTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-      return {
-        icon: '🌧',
-        answer: `Pluie à ${rainH}`,
-        sub: `${next8[rainIdx].toFixed(1)} mm prévu`,
-        cls: rainIdx < 2 ? 'q-warn' : 'q-ok',
-      };
+      let idx = times.findIndex(t => new Date(t + ':00').getTime() >= now);
+      if (idx < 0) idx = 0;
+      const slots = [];
+      for (let i = idx; i < Math.min(idx + 6, times.length); i++) {
+        const code = hourly.value.weather_code?.[i] ?? 0;
+        const temp = hourly.value.temperature_2m?.[i];
+        const prob = hourly.value.precipitation_probability?.[i] ?? 0;
+        slots.push({
+          hour: times[i].slice(11, 16),
+          temp: temp != null ? Math.round(temp) : '—',
+          prob,
+          icon: wmoIcon(code),
+        });
+      }
+      const currTemp = slots[0]?.temp ?? '—';
+      return { slots, currTemp };
     });
 
     // Sélecteur de jour pour le détail horaire
@@ -404,6 +405,8 @@ createApp({
         groups[ds].push({
           hour:   t.slice(11, 16),
           speed,
+          kt:     toKt(speed),
+          gkt:    toKt(hourly.value.wind_gusts_10m[i]),
           gust:   hourly.value.wind_gusts_10m[i],
           dir:    hourly.value.wind_direction_10m[i],
           isPast: new Date(t + ':00').getTime() < now - 3_600_000,
@@ -440,8 +443,8 @@ createApp({
       const labels = slice(hourly.value.time).map(t =>
         new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
       );
-      const speeds = slice(hourly.value.wind_speed_10m);
-      const gusts  = slice(hourly.value.wind_gusts_10m);
+      const speeds = slice(hourly.value.wind_speed_10m).map(toKt);
+      const gusts  = slice(hourly.value.wind_gusts_10m).map(toKt);
 
       if (chart) chart.destroy();
 
@@ -468,7 +471,7 @@ createApp({
           },
           scales: {
             x: { ticks: { color: '#475569', maxRotation: 0, autoSkip: true, maxTicksLimit: 6, font: { size: 11 } }, grid: { color: '#1a3a5220' } },
-            y: { min: 0, ticks: { color: '#475569', callback: v => v + ' km/h', font: { size: 11 } }, grid: { color: '#1a3a5220' } },
+            y: { min: 0, ticks: { color: '#475569', callback: v => v + ' kt', font: { size: 11 } }, grid: { color: '#1a3a5220' } },
           },
         },
         plugins: [{
@@ -477,8 +480,8 @@ createApp({
             if (!chartArea) return;
             ctx.save();
             ctx.fillStyle = '#22c55e0a';
-            const y1 = scales.y.getPixelForValue(15);
-            const y2 = scales.y.getPixelForValue(40);
+            const y1 = scales.y.getPixelForValue(toKt(15));
+            const y2 = scales.y.getPixelForValue(toKt(40));
             ctx.fillRect(chartArea.left, y2, chartArea.right - chartArea.left, y1 - y2);
             ctx.restore();
           },
@@ -494,7 +497,7 @@ createApp({
         const windUrl = `https://api.open-meteo.com/v1/forecast`
           + `?latitude=${LAT}&longitude=${LNG}`
           + `&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m`
-          + `&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation`
+          + `&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,temperature_2m,weather_code,precipitation_probability`
           + `&daily=wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,precipitation_sum`
           + `&wind_speed_unit=kmh&forecast_days=8&models=meteofrance_seamless&timezone=Europe/Paris`;
 
@@ -549,11 +552,11 @@ createApp({
 
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
-      WEBCAMS, kiteInfo, heroClass, goStatus, goBadgeClass,
-      nextDays, rainInfo, windOrigin, tideNow, waveInfo,
+      WEBCAMS, heroClass,
+      nextDays, weatherForecast, windOrigin, tideNow, waveInfo,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
       timeAgo,
-      fetchAll, dirLabel, speedColor, snapUrl, openCam,
+      fetchAll, dirLabel, speedColor, snapUrl, openCam, toKt,
     };
   },
 }).mount('#app');

@@ -37,11 +37,9 @@
            HERO — vitesse + statut en un coup d'œil
       ════════════════════════════════════════════ -->
       <section class="hero" :class="heroClass">
-        <div class="hero-badge" :class="goBadgeClass">{{ goStatus.emoji }} {{ goStatus.label }}</div>
-
         <div class="hero-main">
-          <div class="hero-speed">{{ Math.round(current.wind_speed_10m) }}</div>
-          <div class="hero-unit">km/h</div>
+          <div class="hero-speed">{{ toKt(current.wind_speed_10m) }}</div>
+          <div class="hero-unit">nœuds</div>
         </div>
 
         <div class="hero-sub">
@@ -56,11 +54,7 @@
             </svg>
             <span>{{ dirLabel(current.wind_direction_10m) }} {{ current.wind_direction_10m }}°</span>
           </div>
-          <div class="hero-gust">Rafales <b>{{ Math.round(current.wind_gusts_10m) }} km/h</b></div>
-        </div>
-
-        <div class="hero-kite" v-if="kiteInfo.size">
-          <b>{{ kiteInfo.size }}</b> recommandée
+          <div class="hero-gust">Rafales <b>{{ toKt(current.wind_gusts_10m) }} nœuds</b></div>
         </div>
       </section>
 
@@ -84,20 +78,18 @@
           </div>
         </div>
 
-        <!-- Quel support ? -->
-        <div class="q-card" :class="kiteInfo.go === false ? 'q-nogo' : 'q-go'">
-          <div class="q-label">Quel support ?</div>
-          <div class="q-answer" v-if="kiteInfo.size">{{ kiteInfo.size }}</div>
-          <div class="q-answer" v-else>—</div>
-          <div class="q-sub">{{ kiteInfo.label }}</div>
-        </div>
-
-        <!-- Pluie ? -->
-        <div class="q-card" :class="rainInfo.cls">
-          <div class="q-label">Pluie ?</div>
-          <div class="q-icon">{{ rainInfo.icon }}</div>
-          <div class="q-answer">{{ rainInfo.answer }}</div>
-          <div class="q-sub">{{ rainInfo.sub }}</div>
+        <!-- Météo à venir -->
+        <div class="q-card q-weather" v-if="weatherForecast">
+          <div class="q-label">Météo</div>
+          <div class="weather-temp">{{ weatherForecast.currTemp }}°</div>
+          <div class="weather-slots">
+            <div class="weather-slot" v-for="s in weatherForecast.slots" :key="s.hour">
+              <span class="ws-hour">{{ s.hour }}</span>
+              <span class="ws-icon">{{ s.icon }}</span>
+              <span class="ws-temp">{{ s.temp }}°</span>
+              <span class="ws-prob" v-if="s.prob > 10">{{ s.prob }}%</span>
+            </div>
+          </div>
         </div>
 
         <!-- Vagues -->
@@ -119,10 +111,14 @@
         <div class="q-card">
           <div class="q-label">Prochains jours</div>
           <div class="q-weekend" v-if="nextDays.length">
-            <div v-for="d in nextDays.slice(1, 5)" :key="d.label" class="q-wday" :class="d.cls">
-              <span>{{ d.label }}</span>
-              <span class="q-wday-icon">{{ d.icon }}</span>
-              <span class="q-wday-speed">{{ d.speed }}km/h</span>
+            <div v-for="d in nextDays.slice(1, 6)" :key="d.label" class="q-wday">
+              <span class="wday-label">{{ d.label }}</span>
+              <div class="wday-bar-wrap">
+                <div class="wday-bar" :style="{ width: Math.min(100, d.kt/40*100)+'%', background: d.color }"></div>
+              </div>
+              <span class="wday-kt" :style="{ color: d.color }">{{ d.kt }}kt</span>
+              <span class="wday-dir">{{ d.dir }}</span>
+              <span v-if="d.offshore === true" class="wday-offshore">⚠ terre</span>
             </div>
           </div>
           <div class="q-answer" v-else>Pas de données</div>
@@ -155,9 +151,18 @@
             <span class="tide-hbar-lbl hw">▲ PM</span>
           </div>
 
+          <!-- Coefficient -->
+          <div class="tide-coeff-row">
+            <span class="tide-coeff-val">{{ tideNow.coeff }}</span>
+            <span class="tide-coeff-label" :class="tideNow.coeffCls">{{ tideNow.coeffLabel }}</span>
+            <div class="tide-coeff-bar">
+              <div class="tide-coeff-fill" :class="tideNow.coeffCls" :style="{ width: ((tideNow.coeff - 20) / 100 * 100) + '%' }"></div>
+            </div>
+          </div>
+
           <!-- Prochains PM/BM -->
           <template v-if="tides.length">
-            <div class="q-tide-row" v-for="t in tides.slice(0,2)" :key="t.t">
+            <div class="q-tide-row" v-for="t in tides.slice(0,4)" :key="t.t">
               <span class="q-tide-type" :class="t.type === 'HW' ? 'hw' : 'lw'">
                 {{ t.type === 'HW' ? '▲ PM' : '▽ BM' }}
               </span>
@@ -202,13 +207,13 @@
           </button>
         </div>
         <div class="day-slots" v-if="selectedDayHourly">
-          <div class="day-slot"
-            v-for="h in selectedDayHourly.slots" :key="h.hour"
-            :class="{ 'slot-past': h.isPast }"
-            :style="{ borderLeftColor: h.isPast ? 'transparent' : speedColor(h.speed) }">
+          <div class="day-slot" v-for="h in selectedDayHourly.slots" :key="h.hour" :class="{ 'slot-past': h.isPast }">
             <span class="slot-hour">{{ h.hour }}</span>
-            <span class="slot-speed" :style="{ color: h.isPast ? 'var(--muted)' : speedColor(h.speed) }">{{ Math.round(h.speed) }}</span>
-            <span class="slot-gust">↑{{ Math.round(h.gust) }}</span>
+            <div class="slot-bar-wrap">
+              <div class="slot-bar" :style="{ width: Math.min(100, h.kt/40*100)+'%', opacity: h.isPast ? 0.3 : 1, background: speedColor(h.speed) }"></div>
+            </div>
+            <span class="slot-kt" :style="{ color: h.isPast ? 'var(--muted)' : speedColor(h.speed) }">{{ h.kt }}kt</span>
+            <span class="slot-gust">↑{{ h.gkt }}kt</span>
             <span class="slot-dir">{{ dirLabel(h.dir) }}</span>
           </div>
         </div>

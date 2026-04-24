@@ -180,14 +180,42 @@ nav {
 .q-sub    { font-size: .7rem; color: var(--muted); line-height: 1.4; }
 
 /* Prochains jours */
-.q-weekend { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-.q-wday { display: flex; align-items: center; justify-content: space-between; font-size: .85rem; }
-.q-wday span:first-child { font-weight: 600; }
-.q-wday-icon  { font-size: .95rem; }
-.q-wday-speed { font-size: .78rem; color: var(--muted); font-weight: 500; }
-.wday-go     { color: var(--green); }
-.wday-expert { color: var(--orange); }
-.wday-nogo   { color: var(--terra); }
+.q-weekend { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+.q-wday { display: grid; grid-template-columns: 32px 1fr 32px 28px auto; align-items: center; gap: 6px; font-size: .82rem; }
+.wday-label { font-weight: 700; color: var(--text); }
+.wday-bar-wrap { height: 5px; background: var(--s2); border-radius: 3px; overflow: hidden; }
+.wday-bar { height: 100%; border-radius: 3px; }
+.wday-kt  { font-weight: 700; font-size: .82rem; text-align: right; }
+.wday-dir { font-size: .68rem; color: var(--muted); font-weight: 600; }
+.wday-offshore { font-size: .6rem; font-weight: 700; color: var(--terra); white-space: nowrap; }
+
+/* Météo */
+.q-weather { grid-column: 1/-1; }
+.weather-temp { font-size: 2.4rem; font-weight: 200; color: var(--blue); line-height: 1; margin: 6px 0 10px; }
+.weather-slots { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+.weather-slots::-webkit-scrollbar { display: none; }
+.weather-slot { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 46px;
+  background: var(--s1); border-radius: 10px; padding: 8px 4px; }
+.ws-hour { font-size: .6rem; color: var(--muted); font-weight: 600; }
+.ws-icon { font-size: 1.2rem; line-height: 1; }
+.ws-temp { font-size: .75rem; font-weight: 700; color: var(--text); }
+.ws-prob { font-size: .6rem; color: var(--blue); font-weight: 700; }
+
+/* Coefficient de marée */
+.tide-coeff-row {
+  display: flex; align-items: center; gap: 10px;
+  margin: 8px 0 6px;
+}
+.tide-coeff-val { font-size: 1.6rem; font-weight: 700; min-width: 44px; color: var(--text); }
+.tide-coeff-label { font-size: .68rem; font-weight: 700; min-width: 80px; }
+.coeff-high  { color: var(--blue); }
+.coeff-mid   { color: var(--orange); }
+.coeff-low   { color: var(--muted); }
+.tide-coeff-bar { flex: 1; height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden; }
+.tide-coeff-fill { height: 100%; border-radius: 3px; transition: width .6s; }
+.tide-coeff-fill.coeff-high { background: var(--blue); }
+.tide-coeff-fill.coeff-mid  { background: var(--orange); }
+.tide-coeff-fill.coeff-low  { background: var(--muted); }
 
 /* Marées */
 .q-tide-row { display: flex; align-items: center; gap: 7px; font-size: .82rem; padding: 3px 0; }
@@ -392,19 +420,22 @@ nav {
   color: #fff; font-weight: 700;
 }
 
-.day-slots { display: flex; flex-direction: column; gap: 3px; }
+.day-slots { display: flex; flex-direction: column; gap: 2px; }
 .day-slot {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 11px;
+  display: grid;
+  grid-template-columns: 40px 1fr 42px 48px 34px;
+  align-items: center; gap: 8px;
+  padding: 7px 12px;
   background: var(--card); border-radius: 10px;
   border: 1px solid var(--border);
-  border-left: 3px solid transparent;
 }
-.day-slot.slot-past { opacity: .38; }
-.slot-hour  { font-size: .7rem; color: var(--muted); min-width: 38px; font-weight: 500; }
-.slot-speed { font-size: .98rem; font-weight: 700; min-width: 30px; }
-.slot-gust  { font-size: .68rem; color: var(--orange); flex: 1; font-weight: 500; }
-.slot-dir   { font-size: .68rem; color: var(--muted); font-weight: 500; }
+.day-slot.slot-past { opacity: .35; }
+.slot-hour     { font-size: .72rem; color: var(--muted); font-weight: 600; }
+.slot-bar-wrap { height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden; }
+.slot-bar      { height: 100%; border-radius: 3px; transition: width .4s; }
+.slot-kt       { font-size: .9rem; font-weight: 700; text-align: right; }
+.slot-gust     { font-size: .68rem; color: var(--orange); font-weight: 600; text-align: right; }
+.slot-dir      { font-size: .65rem; color: var(--muted); font-weight: 600; text-align: right; }
 
 /* ── WEBCAMS ─────────────────────────────────────────────────────────────── */
 .webcam-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }

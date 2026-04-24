@@ -28,8 +28,8 @@ jobs:
 
       - name: Generate podcast
         env:
-          MISTRAL_API_KEY:   ${{ secrets.MISTRAL_API_KEY }}
-          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          OPENAI_API_KEY:  ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/generate_daily_podcast.py
 
       - name: Commit podcast

@@ -1,6 +1,6 @@
 """
 generate_daily_podcast.py — Lancé chaque matin par GitHub Actions
-Données riches → Mistral contexte maximal → ElevenLabs River → ffmpeg mastering
+Données riches → Mistral contexte maximal → OpenAI TTS onyx → ffmpeg mastering
 """
 
 import os, json, subprocess, requests
@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 MISTRAL_KEY = os.environ["MISTRAL_API_KEY"]
-ELEVEN_KEY  = os.environ["ELEVENLABS_API_KEY"]
+OPENAI_KEY  = os.environ["OPENAI_API_KEY"]
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 
 BASE     = Path(__file__).parent.parent
@@ -16,12 +16,6 @@ JINGLE   = BASE / "podcast" / "jingle_bg.mp3"
 OUT_FILE = BASE / "podcast" / "today.mp3"
 TTS_RAW  = BASE / "podcast" / "tts" / "voice_raw.mp3"
 TTS_RAW.parent.mkdir(exist_ok=True)
-
-FRENCH_VOICES = [
-    ("SAz9YHcvj6GT2YYXdXww", "River"),
-    ("N2lVS1w4EtoT3dr4eOWO", "Callum"),
-    ("pNInz6obpgDQGcFmaJgB", "Adam"),
-]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def to_kt(kmh): return max(0, round(float(kmh) / 1.852))
@@ -235,30 +229,19 @@ Rédige le bulletin maintenant :"""
     text = re.sub(r'\n{3,}', '\n\n', text).strip()
     return text
 
-# ── 3. ElevenLabs TTS ─────────────────────────────────────────────────────────
+# ── 3. OpenAI TTS ─────────────────────────────────────────────────────────────
 def text_to_speech(script: str, out_path: Path) -> str:
-    for voice_id, voice_name in FRENCH_VOICES:
-        r = requests.post(
-            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
-            headers={"xi-api-key": ELEVEN_KEY, "Content-Type": "application/json"},
-            json={
-                "text": script,
-                "model_id": "eleven_multilingual_v2",
-                "voice_settings": {
-                    "stability": 0.42,
-                    "similarity_boost": 0.82,
-                    "style": 0.28,
-                    "use_speaker_boost": True,
-                }
-            },
-            timeout=60,
-        )
-        if r.status_code == 200:
-            out_path.write_bytes(r.content)
-            print(f"  Voix {voice_name} OK — {len(r.content)//1024}KB")
-            return voice_name
-        print(f"  {voice_name} echec {r.status_code}")
-    raise RuntimeError("Aucune voix disponible")
+    r = requests.post(
+        "https://api.openai.com/v1/audio/speech",
+        headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+        json={"model": "tts-1-hd", "voice": "onyx", "input": script},
+        timeout=60,
+    )
+    if r.status_code == 200:
+        out_path.write_bytes(r.content)
+        print(f"  OpenAI onyx OK — {len(r.content)//1024}KB")
+        return "onyx"
+    raise RuntimeError(f"OpenAI TTS echec {r.status_code}: {r.text[:100]}")
 
 # ── 4. ffmpeg — mastering radio + mix musique ────────────────────────────────
 def mix_audio(voice_path: Path, music_path: Path, output: Path):
@@ -323,7 +306,7 @@ if __name__ == "__main__":
     print(f"\n--- SCRIPT ({len(script.split())} mots) ---\n{script}\n---\n")
     (BASE / "podcast" / "tts" / "script.txt").write_text(script, encoding="utf-8")
 
-    print("TTS ElevenLabs...")
+    print("TTS OpenAI...")
     voice = text_to_speech(script, TTS_RAW)
 
     print("\nMix ffmpeg + mastering...")

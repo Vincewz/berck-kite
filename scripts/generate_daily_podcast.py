@@ -85,24 +85,20 @@ def fetch_conditions():
         "wave_p":  round(float(mc.get("wave_period", 0))),
     }
 
-# ── 2. Mistral — script radio LIBRE ──────────────────────────────────────────
+# ── 2. Mistral — script radio sobre et pro ───────────────────────────────────
 def generate_script(cond, date_str):
-    prompt = f"""Tu es un présentateur radio sympa et décontracté pour le bulletin quotidien kite à Berck-sur-Mer.
+    prompt = f"""Tu rédiges le bulletin kite quotidien de Berck-sur-Mer pour une radio locale.
+Style : journaliste météo professionnel — informatif, fluide, chaleureux sans être familier.
+Pas d'humour forcé, pas d'exclamations excessives. Comme un vrai présentateur radio.
 
-Données météo du {date_str} :
-- Vent : {cond['dir']} ({cond['deg']}°) — {cond['kt']} nœuds en moyenne, rafales jusqu'à {cond['gkt']} nœuds
-- Vagues : {cond['wave_h']} mètres, période {cond['wave_p']} secondes
-- Météo : {cond['weather']}, {cond['temp']}°C
+Conditions du {date_str} :
+Vent {cond['dir']}, {cond['kt']} nœuds, rafales {cond['gkt']} nœuds.
+Vagues {cond['wave_h']}m ({cond['wave_p']}s). {cond['weather'].capitalize()}, {cond['temp']}°C.
 
-Guidelines :
-- Durée visée : environ 45-60 secondes à l'oral (100-130 mots)
-- Commence directement, pas de "Bonjour" générique fade — accroche originale
-- Mentionne les chiffres importants mais de façon naturelle, conversationnelle
-- Tu peux faire des comparaisons, des métaphores nautiques, de l'humour léger
-- Conclus avec quelque chose de sympa pour les kiteurs de Berck
-- UNIQUEMENT du texte à lire, pas de didascalies, pas de tirets, pas de titres
-
-Écris le bulletin maintenant :"""
+Rédige un bulletin oral de 45 à 55 secondes (environ 110 mots).
+Commence par situer le contexte du jour (météo, ambiance), puis décris les conditions.
+Conclus simplement sur ce que ça implique pour la plage.
+Texte brut uniquement, sans ponctuation de scène ni tirets."""
 
     r = requests.post(
         "https://api.mistral.ai/v1/chat/completions",
@@ -159,20 +155,24 @@ def mix_audio(voice_path: Path, music_path: Path, output: Path):
 
     print(f"  Durée voix : {voice_dur:.1f}s — Podcast total : {total_dur:.1f}s")
 
+    INTRO_DUR = 3.0   # secondes de musique seule avant la voix
+
     subprocess.run([
         "ffmpeg",
         "-i", str(voice_path),
         "-i", str(music_path),
         "-filter_complex",
         (
-            # Voix : garder telle quelle + 0.5s de silence avant
-            f"[0:a]adelay=500|500,asetpts=PTS-STARTPTS[voice];"
-            # Musique : looper si besoin, fade-in 1s, volume 0.15, fade-out 2s avant la fin
-            f"[1:a]aloop=loop=-1:size=2e+09,atrim=0:{total_dur+1:.1f},"
-            f"afade=t=in:st=0:d=1,"
-            f"afade=t=out:st={total_dur-1.5:.1f}:d=2,"
-            f"volume=0.15,asetpts=PTS-STARTPTS[music];"
-            # Mix final : voix en premier plan, musique en fond
+            # Voix : décaler de 3s pour laisser l'intro musicale
+            f"[0:a]adelay={int(INTRO_DUR*1000)}|{int(INTRO_DUR*1000)},asetpts=PTS-STARTPTS[voice];"
+            # Musique : volume bas pendant la voix, plein pendant l'intro
+            # Durée totale = intro + voix + 1s
+            f"[1:a]aloop=loop=-1:size=2e+09,"
+            f"atrim=0:{total_dur + INTRO_DUR + 1:.1f},"
+            f"afade=t=in:st=0:d=1.5,"                         # fade-in au début
+            f"afade=t=out:st={total_dur + INTRO_DUR - 1.5:.1f}:d=2,"  # fade-out à la fin
+            f"volume=0.14,asetpts=PTS-STARTPTS[music];"
+            # Mix : voix + musique de fond
             f"[voice][music]amix=inputs=2:duration=first:normalize=0[out]"
         ),
         "-map", "[out]",

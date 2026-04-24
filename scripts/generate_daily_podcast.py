@@ -115,7 +115,7 @@ def fetch_all(now: datetime):
     m = requests.get(
         f"https://marine-api.open-meteo.com/v1/marine"
         f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
-        f"&current=wave_height,wave_period,wave_direction"
+        f"&current=wave_height,wave_period,wave_direction,sea_surface_temperature"
         f"&hourly=wave_height,wave_period"
         f"&timezone=Europe/Paris&forecast_days=3", timeout=10
     ).json()
@@ -186,6 +186,7 @@ def fetch_all(now: datetime):
             "wave_h":  round(float(mc.get("wave_height", 0)), 1),
             "wave_p":  round(float(mc.get("wave_period", 0))),
             "wave_dir":dir_label(mc.get("wave_direction", 0)),
+            "sea_temp":round(float(mc["sea_surface_temperature"])) if mc.get("sea_surface_temperature") is not None else None,
             "offshore":offshore_warning(c["wind_direction_10m"]),
         },
         "hours": hours_today[:8],   # 8 prochaines heures
@@ -209,7 +210,7 @@ Règles absolues :
 
 CONTENU — uniquement des faits :
 - Commencer par la date du jour
-- Conditions actuelles : vent (force ET orientation cardinale), rafales, vagues, météo, température
+- Conditions actuelles : vent (force ET orientation cardinale), rafales, vagues, température de l'eau, météo, température air
 - Prochaine pleine mer et prochaine basse mer (heure + hauteur)
 - Évolution dans la journée heure par heure si notable
 - Aperçu de demain : météo, température, vent avec son orientation cardinale
@@ -250,7 +251,7 @@ def generate_script(data: dict, date_str: str) -> str:
 
 MAINTENANT :
   Vent : {n['dir']} ({n['deg']}°) — {n['kt']} nœuds, rafales {n['gkt']} nœuds
-  Mer : vagues {n['wave_h']}m, période {n['wave_p']}s, houle de {n['wave_dir']}
+  Mer : vagues {n['wave_h']}m, période {n['wave_p']}s, houle de {n['wave_dir']}{f", température eau {n['sea_temp']}°C" if n.get('sea_temp') is not None else ""}
   Ciel : {n['weather']}
   Température : {n['temp']}°C (ressenti {n['feels']}°C)
   Lever soleil : {data['sunrise']} — Coucher : {data['sunset']}{offshore_note}

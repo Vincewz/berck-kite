@@ -562,11 +562,17 @@ nav {
 .modal-footer a { color: var(--blue); text-decoration: none; font-weight: 600; }
 
 /* ── MAP ─────────────────────────────────────────────────────────────────── */
-#berck-map {
+#berck-map, #rain-map {
   height: 290px; border-radius: 12px; overflow: hidden;
   border: 1px solid var(--border);
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
+
+/* ── TEMP EAU ───────────────────────────────────────────────────────────── */
+.sea-temp {
+  margin-top: 8px; font-size: .85rem; color: var(--muted);
+}
+.sea-temp b { color: #38bdf8; }
 .leaflet-container { background: #0d1f30; }
 .leaflet-control-attribution { display: none !important; }
 .leaflet-control-zoom { display: none; }

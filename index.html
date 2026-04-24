@@ -129,6 +129,7 @@
             </div>
           </div>
           <div class="q-sub">{{ waveInfo.period !== '—' ? waveInfo.period + 's · ' : '' }}{{ waveInfo.label }}</div>
+          <div class="sea-temp" v-if="seaTemp !== null">🌊 Eau <b>{{ seaTemp }}°C</b></div>
         </div>
 
         <!-- Prochains jours -->
@@ -215,6 +216,14 @@
       <section class="map-section">
         <div class="section-title">🗺️ Carte vent <span class="badge-arome">AROME</span></div>
         <div id="berck-map"></div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           RADAR PLUIE
+      ════════════════════════════════════════════ -->
+      <section class="map-section">
+        <div class="section-title">🌧️ Radar pluie <span class="badge-arome">RainViewer</span></div>
+        <div id="rain-map"></div>
       </section>
 
       <!-- ═══════════════════════════════════════════

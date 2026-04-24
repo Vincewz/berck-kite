@@ -52,6 +52,49 @@ def offshore_warning(deg):
         return "⚠ vent de terre (offshore) — prudence"
     return None
 
+# ── Modèle harmonique marées (porté depuis app.js) ───────────────────────────
+import math as _math
+
+_TIDE_REF_HW_MS = 1745398800000  # 2026-04-23T06:00:00Z en ms
+_M2_MS   = 44712000              # période M2 : 12h25min12s
+_MSF_MS  = 14.77 * 86400000      # cycle vives/mortes-eaux
+
+def _tide_coeff(t_ms):
+    phase = (t_ms - _TIDE_REF_HW_MS) % _MSF_MS
+    if phase < 0: phase += _MSF_MS
+    return 0.5 + 0.5 * _math.cos(2 * _math.pi * phase / _MSF_MS)
+
+def _tide_height(t_ms):
+    coeff = _tide_coeff(t_ms)
+    hw    = 6.5 + coeff * 2.5
+    lw    = 3.5 - coeff * 2.5
+    mid   = (hw + lw) / 2
+    rang  = (hw - lw) / 2
+    phase = (t_ms - _TIDE_REF_HW_MS) % _M2_MS
+    if phase < 0: phase += _M2_MS
+    return mid + rang * _math.cos((phase / _M2_MS) * 2 * _math.pi)
+
+def next_tides(from_dt: datetime, count=4):
+    """Retourne les prochains PM/BM sous forme de dicts {type, h, timeStr}"""
+    step = 5 * 60 * 1000  # 5 min en ms
+    from_ms = int(from_dt.timestamp() * 1000)
+    extremes = []
+    prev = _tide_height(from_ms - step)
+    curr = _tide_height(from_ms)
+    t = from_ms
+    while t < from_ms + 3 * _M2_MS and len(extremes) < count:
+        nxt = _tide_height(t + step)
+        if curr > prev and curr > nxt:
+            dt = datetime.fromtimestamp(t / 1000, tz=from_dt.tzinfo)
+            extremes.append({"type": "PM", "h": round(curr, 1), "timeStr": dt.strftime("%H:%M")})
+        elif curr < prev and curr < nxt:
+            dt = datetime.fromtimestamp(t / 1000, tz=from_dt.tzinfo)
+            extremes.append({"type": "BM", "h": round(curr, 1), "timeStr": dt.strftime("%H:%M")})
+        prev = curr
+        curr = nxt
+        t += step
+    return extremes
+
 # ── 1. Fetch — données riches Open-Meteo ─────────────────────────────────────
 def fetch_all(now: datetime):
     paris_str = now.strftime("%Y-%m-%dT%H:00")
@@ -124,6 +167,8 @@ def fetch_all(now: datetime):
     sunrise = dl["sunrise"][0][11:16] if dl.get("sunrise") else "06:30"
     sunset  = dl["sunset"][0][11:16]  if dl.get("sunset")  else "21:00"
 
+    tides = next_tides(now, count=4)
+
     return {
         # Conditions actuelles
         "now": {
@@ -144,6 +189,7 @@ def fetch_all(now: datetime):
         "tomorrow": tomorrow_data,
         "sunrise": sunrise,
         "sunset": sunset,
+        "tides": tides,
     }
 
 # ── 2. Mistral — contexte maximal, script naturel ────────────────────────────
@@ -158,7 +204,8 @@ Règles absolues :
 - Ton : celui d'un présentateur météo radio — factuel, neutre, posé
 
 CONTENU — uniquement des faits :
-- Conditions actuelles : vent, rafales, direction, vagues, météo, température
+- Conditions actuelles : vent (force ET orientation cardinale), rafales, vagues, météo, température
+- Marées : prochains PM/BM avec heure et hauteur
 - Évolution dans la journée heure par heure si notable
 - Comparaison avec la veille si pertinente (plus fort / plus faible / similaire)
 - Aperçu de demain : chiffres bruts
@@ -177,7 +224,7 @@ def generate_script(data: dict, date_str: str) -> str:
     t = data["tomorrow"]
     hours = data["hours"]
 
-    # Construire un résumé de l'évolution horaire lisible
+    # Résumé horaire
     evolution = ""
     if hours:
         slots = []
@@ -185,7 +232,12 @@ def generate_script(data: dict, date_str: str) -> str:
             slots.append(f"{h['h']} : {h['kt']}kt {h['dir']}, {h['weather']}")
         evolution = " | ".join(slots)
 
-    offshore_note = f"\n⚠ ALERTE SÉCURITÉ : {n['offshore']}" if n['offshore'] else ""
+    # Marées
+    tides_str = ""
+    for td in data.get("tides", []):
+        tides_str += f"  {td['type']} à {td['timeStr']} — {td['h']}m\n"
+
+    offshore_note = f"\n⚠ ALERTE OFFSHORE : {n['offshore']}" if n['offshore'] else ""
 
     user_msg = f"""Bulletin du {date_str} — généré à {datetime.now().strftime('%H:%M')}
 
@@ -196,6 +248,8 @@ MAINTENANT :
   Température : {n['temp']}°C (ressenti {n['feels']}°C)
   Lever soleil : {data['sunrise']} — Coucher : {data['sunset']}{offshore_note}
 
+MARÉES (prochains PM/BM) :
+{tides_str}
 ÉVOLUTION AUJOURD'HUI :
   {evolution}
 

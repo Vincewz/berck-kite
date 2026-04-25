@@ -43,6 +43,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-yolo-${{ hashFiles('kite-detector/requirements.txt') }}
+          restore-keys: pip-yolo-
+
       - name: Installer torch + ultralytics
         run: |
           pip install requests --quiet

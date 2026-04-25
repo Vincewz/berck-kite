@@ -2,7 +2,7 @@
 
 Tableau de bord météo kite en temps réel pour Berck-sur-Mer, avec détection automatique de kites par vision par ordinateur et bulletin audio quotidien.
 
-**[kiteberck.fr](https://kiteberck.fr)**
+**[berck.info](http://berck.info)**
 
 ---
 

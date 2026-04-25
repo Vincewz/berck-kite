@@ -647,7 +647,7 @@ createApp({
         return parts.length ? `\n🕐 ${parts.join(' | ')}` : '';
       })() : '';
       const temp = `\n🌡️ ${Math.round(c.temperature_2m)}°C`;
-      const text = `Berck-sur-Mer — ${date}\n💨 ${dir} · ${kt} nœuds · rafales ${gkt}${wh}${temp}${tide}\n\nhttps://kiteberck.fr`;
+      const text = `Berck-sur-Mer — ${date}\n💨 ${dir} · ${kt} nœuds · rafales ${gkt}${wh}${temp}${tide}\n\nhttp://berck.info`;
 
       if (navigator.share) {
         navigator.share({ text }).catch(() => {});

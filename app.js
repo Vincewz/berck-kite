@@ -261,7 +261,24 @@ createApp({
     const tides   = ref([]);
     const tideMs  = ref(Date.now());
     const heroBg  = ref(null);
+    const kiteDetection = ref(null);
     let chart = null, refreshTimer = null, tideTimer = null;
+
+    // ── Détection kites YOLO (mise à jour quotidienne via GitHub Actions) ────
+    async function fetchKiteStatus() {
+      try {
+        const r = await fetch('/kite_status.json?t=' + Math.floor(Date.now() / 3_600_000));
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!data.timestamp) return;
+        const ts = new Date(data.timestamp);
+        const today = new Date();
+        // N'afficher que si la détection date d'aujourd'hui
+        if (ts.toDateString() === today.toDateString()) {
+          kiteDetection.value = data;
+        }
+      } catch {}
+    }
 
     // ── Fond hero = dernière image webcam Éole disponible ────────────────────
     function loadHeroBg() {
@@ -572,6 +589,7 @@ createApp({
     onMounted(() => {
       fetchAll();
       loadHeroBg();
+      fetchKiteStatus();
       refreshTimer = setInterval(fetchAll, 10 * 60_000);
       tideTimer    = setInterval(() => { tideMs.value = Date.now(); }, 60_000);
     });
@@ -613,7 +631,7 @@ createApp({
 
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
-      WEBCAMS, heroClass, heroBg,
+      WEBCAMS, heroClass, heroBg, kiteDetection,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
       timeAgo, shareToast,

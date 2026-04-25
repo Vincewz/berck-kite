@@ -1,0 +1,38 @@
+name: 🪁 Détection kites YOLO
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 13h Paris (CEST UTC+2) — heure de pointe session
+  workflow_dispatch:
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer dépendances
+        run: |
+          pip install requests
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --quiet
+          pip install ultralytics --quiet
+
+      - name: Détecter les kites
+        run: python kite-detector/scripts/infer_kite.py
+
+      - name: Commit résultat
+        run: |
+          git config user.name  "KiteBerck Bot"
+          git config user.email "bot@kiteberck.fr"
+          git add berck-kite/kite_status.json
+          git diff --cached --quiet && echo "Aucun changement" && exit 0
+          DATE=$(date +'%Y-%m-%d %H:%M')
+          git commit -m "🪁 Détection kite ${DATE}"
+          git push

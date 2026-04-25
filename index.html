@@ -59,6 +59,16 @@
           <div class="hero-gust">Rafales <b>{{ toKt(current.wind_gusts_10m) }} nœuds</b></div>
         </div>
 
+        <!-- ── BADGE DÉTECTION YOLO ── -->
+        <div v-if="kiteDetection" class="kite-detection-badge"
+             :class="kiteDetection.kites_detected > 0 ? 'kite-badge-found' : kiteDetection.conditions_ok ? 'kite-badge-none' : 'kite-badge-skip'">
+          <span v-if="kiteDetection.kites_detected > 0">
+            🪁 {{ kiteDetection.kites_detected }} kite{{ kiteDetection.kites_detected > 1 ? 's' : '' }} détecté{{ kiteDetection.kites_detected > 1 ? 's' : '' }} aujourd'hui
+          </span>
+          <span v-else-if="kiteDetection.conditions_ok">🔍 Aucun kite détecté aujourd'hui</span>
+          <span v-else>📊 Conditions non réunies aujourd'hui</span>
+        </div>
+
         <!-- ── BOUTON PARTAGE ── -->
         <button class="share-btn" @click="shareConditions" title="Partager les conditions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

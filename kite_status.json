@@ -1,0 +1,10 @@
+{
+  "timestamp": null,
+  "conditions_ok": false,
+  "reason": "Première détection pas encore effectuée",
+  "wind_kt": 0,
+  "wind_dir": 0,
+  "temp_c": 0,
+  "kites_detected": 0,
+  "boxes": []
+}

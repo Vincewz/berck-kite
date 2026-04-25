@@ -134,6 +134,17 @@ nav {
 .hero-kite { font-size: .82rem; color: rgba(255,255,255,.5); }
 .hero-kite b { color: #7ac8ee; font-weight: 600; }
 
+/* ── BADGE DÉTECTION KITE ────────────────────────────────────────────────── */
+.kite-detection-badge {
+  position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+  padding: 6px 16px; border-radius: 20px; font-size: .8rem; font-weight: 600;
+  backdrop-filter: blur(8px); white-space: nowrap; letter-spacing: .02em;
+  border: 1px solid rgba(255,255,255,.2);
+}
+.kite-badge-found  { background: rgba(34,197,94,.25);  color: #bbf7d0; border-color: rgba(34,197,94,.4); }
+.kite-badge-none   { background: rgba(100,116,139,.25); color: #cbd5e1; border-color: rgba(100,116,139,.3); }
+.kite-badge-skip   { background: rgba(71,85,105,.2);    color: #94a3b8; border-color: rgba(71,85,105,.3); }
+
 /* ── BOUTON PARTAGE ──────────────────────────────────────────────────────── */
 .share-btn {
   position: absolute; top: 16px; right: 16px;

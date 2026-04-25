@@ -587,34 +587,129 @@ createApp({
 
     function openCam(cam) { activeCam.value = cam; }
 
-    // ── Refs pour le canvas kite ──────────────────────────────────────────────
+    // ── Viewer kite interactif (zoom / pan) ──────────────────────────────────
     const lastKiteImg    = ref(null);
     const lastKiteCanvas = ref(null);
+    const kiteDragging   = ref(false);
+
+    const kiteView = { scale: 1, x: 0, y: 0 };
+    let kiteDrag   = { active: false, startX: 0, startY: 0, viewX: 0, viewY: 0 };
+    let kitePinch  = { active: false, dist: 0 };
+
+    function redrawCanvas() {
+      const canvas = lastKiteCanvas.value;
+      const img    = lastKiteImg.value;
+      if (!canvas || !img) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(kiteView.x, kiteView.y);
+      ctx.scale(kiteView.scale, kiteView.scale);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      if (lastKite.value?.boxes?.length) {
+        const lw = 1.5 / kiteView.scale;
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth   = lw;
+        ctx.shadowColor = 'rgba(0,0,0,0.55)';
+        ctx.shadowBlur  = 3 / kiteView.scale;
+        ctx.fillStyle   = '#22c55e';
+        ctx.font = `600 ${14 / kiteView.scale}px DM Sans, sans-serif`;
+        for (const b of lastKite.value.boxes) {
+          const x = b.x1 * canvas.width, y = b.y1 * canvas.height;
+          const w = (b.x2 - b.x1) * canvas.width, h = (b.y2 - b.y1) * canvas.height;
+          ctx.strokeRect(x, y, w, h);
+          ctx.shadowBlur = 0;
+          ctx.fillText(`${Math.round(b.conf * 100)}%`, x + lw, y - lw * 2);
+          ctx.shadowBlur = 3 / kiteView.scale;
+        }
+      }
+      ctx.restore();
+    }
 
     function drawKiteBoxes() {
       const img    = lastKiteImg.value;
       const canvas = lastKiteCanvas.value;
       if (!img || !canvas || !lastKite.value?.boxes?.length) return;
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#22c55e';
-      ctx.lineWidth   = 1.5;
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur  = 3;
-      for (const b of lastKite.value.boxes) {
-        const x = b.x1 * canvas.width;
-        const y = b.y1 * canvas.height;
-        const w = (b.x2 - b.x1) * canvas.width;
-        const h = (b.y2 - b.y1) * canvas.height;
-        ctx.strokeRect(x, y, w, h);
-        ctx.font      = `600 ${Math.max(10, canvas.width / 80)}px DM Sans, sans-serif`;
-        ctx.fillStyle = '#22c55e';
-        ctx.shadowBlur = 0;
-        ctx.fillText(`${Math.round(b.conf * 100)}%`, x + 2, y - 3);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width  = rect.width  || img.naturalWidth;
+      canvas.height = rect.height || img.naturalHeight;
+
+      // Zoom initial centré sur le cluster de kites
+      const boxes   = lastKite.value.boxes;
+      const minX    = Math.min(...boxes.map(b => b.x1)) * canvas.width;
+      const minY    = Math.min(...boxes.map(b => b.y1)) * canvas.height;
+      const maxX    = Math.max(...boxes.map(b => b.x2)) * canvas.width;
+      const maxY    = Math.max(...boxes.map(b => b.y2)) * canvas.height;
+      const cx      = (minX + maxX) / 2;
+      const cy      = (minY + maxY) / 2;
+      const areaW   = Math.max(maxX - minX, 1);
+      const areaH   = Math.max(maxY - minY, 1);
+      const scale   = Math.min(canvas.width * 0.35 / areaW, canvas.height * 0.35 / areaH, 10);
+      kiteView.scale = scale;
+      kiteView.x     = canvas.width  / 2 - cx * scale;
+      kiteView.y     = canvas.height / 2 - cy * scale;
+      redrawCanvas();
+    }
+
+    function onKiteWheel(e) {
+      const canvas = lastKiteCanvas.value;
+      if (!canvas) return;
+      const rect   = canvas.getBoundingClientRect();
+      const mx     = (e.clientX - rect.left) * (canvas.width  / rect.width);
+      const my     = (e.clientY - rect.top)  * (canvas.height / rect.height);
+      const factor = e.deltaY < 0 ? 1.18 : 1 / 1.18;
+      const ns     = Math.max(0.3, Math.min(20, kiteView.scale * factor));
+      kiteView.x = mx - (mx - kiteView.x) * (ns / kiteView.scale);
+      kiteView.y = my - (my - kiteView.y) * (ns / kiteView.scale);
+      kiteView.scale = ns;
+      redrawCanvas();
+    }
+
+    function onKiteMouseDown(e) {
+      kiteDrag = { active: true, startX: e.clientX, startY: e.clientY, viewX: kiteView.x, viewY: kiteView.y };
+      kiteDragging.value = true;
+    }
+    function onKiteMouseMove(e) {
+      if (!kiteDrag.active) return;
+      kiteView.x = kiteDrag.viewX + (e.clientX - kiteDrag.startX);
+      kiteView.y = kiteDrag.viewY + (e.clientY - kiteDrag.startY);
+      redrawCanvas();
+    }
+    function onKiteMouseUp() { kiteDrag.active = false; kiteDragging.value = false; }
+
+    function pinchDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+
+    function onKiteTouchStart(e) {
+      if (e.touches.length === 1) {
+        kiteDrag = { active: true, startX: e.touches[0].clientX, startY: e.touches[0].clientY, viewX: kiteView.x, viewY: kiteView.y };
+      } else if (e.touches.length === 2) {
+        kiteDrag.active = false;
+        kitePinch = { active: true, dist: pinchDist(e.touches) };
       }
     }
+    function onKiteTouchMove(e) {
+      if (e.touches.length === 1 && kiteDrag.active) {
+        kiteView.x = kiteDrag.viewX + (e.touches[0].clientX - kiteDrag.startX);
+        kiteView.y = kiteDrag.viewY + (e.touches[0].clientY - kiteDrag.startY);
+        redrawCanvas();
+      } else if (e.touches.length === 2 && kitePinch.active) {
+        const canvas  = lastKiteCanvas.value;
+        const rect    = canvas.getBoundingClientRect();
+        const mx      = ((e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left) * (canvas.width  / rect.width);
+        const my      = ((e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top)  * (canvas.height / rect.height);
+        const newDist = pinchDist(e.touches);
+        const f       = newDist / kitePinch.dist;
+        const ns      = Math.max(0.3, Math.min(20, kiteView.scale * f));
+        kiteView.x = mx - (mx - kiteView.x) * f;
+        kiteView.y = my - (my - kiteView.y) * f;
+        kiteView.scale = ns;
+        kitePinch.dist = newDist;
+        redrawCanvas();
+      }
+    }
+    function onKiteTouchEnd() { kiteDrag.active = false; kitePinch.active = false; }
+
+    function resetKiteView() { drawKiteBoxes(); }
 
     onMounted(() => {
       fetchAll();
@@ -661,7 +756,9 @@ createApp({
 
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
-      WEBCAMS, heroClass, heroBg, kiteDetection, lastKite, lastKiteImg, lastKiteCanvas, drawKiteBoxes,
+      WEBCAMS, heroClass, heroBg, kiteDetection, lastKite, lastKiteImg, lastKiteCanvas, kiteDragging,
+      drawKiteBoxes, onKiteWheel, onKiteMouseDown, onKiteMouseMove, onKiteMouseUp,
+      onKiteTouchStart, onKiteTouchMove, onKiteTouchEnd, resetKiteView,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
       timeAgo, shareToast,

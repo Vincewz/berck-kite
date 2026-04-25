@@ -634,8 +634,21 @@ nav {
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
 }
+.kite-reset-btn {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff;
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  font-size: 1rem; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.kite-reset-btn:hover { background: rgba(0,0,0,.65); }
 .last-kite-info {
   padding: 14px 18px;
   display: flex;

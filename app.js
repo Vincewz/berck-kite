@@ -262,6 +262,7 @@ createApp({
     const tideMs  = ref(Date.now());
     const heroBg  = ref(null);
     const kiteDetection = ref(null);
+    const lastKite = ref(null);
     let chart = null, refreshTimer = null, tideTimer = null;
 
     // ── Détection kites YOLO (mise à jour quotidienne via GitHub Actions) ────
@@ -270,10 +271,10 @@ createApp({
         const r = await fetch('/kite_status.json?t=' + Math.floor(Date.now() / 3_600_000));
         if (!r.ok) return;
         const data = await r.json();
+        if (data.last_kite) lastKite.value = data.last_kite;
         if (!data.timestamp) return;
         const ts = new Date(data.timestamp);
         const today = new Date();
-        // N'afficher que si la détection date d'aujourd'hui
         if (ts.toDateString() === today.toDateString()) {
           kiteDetection.value = data;
         }
@@ -586,6 +587,35 @@ createApp({
 
     function openCam(cam) { activeCam.value = cam; }
 
+    // ── Refs pour le canvas kite ──────────────────────────────────────────────
+    const lastKiteImg    = ref(null);
+    const lastKiteCanvas = ref(null);
+
+    function drawKiteBoxes() {
+      const img    = lastKiteImg.value;
+      const canvas = lastKiteCanvas.value;
+      if (!img || !canvas || !lastKite.value?.boxes?.length) return;
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth   = Math.max(2, canvas.width / 200);
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur  = 4;
+      for (const b of lastKite.value.boxes) {
+        const x = b.x1 * canvas.width;
+        const y = b.y1 * canvas.height;
+        const w = (b.x2 - b.x1) * canvas.width;
+        const h = (b.y2 - b.y1) * canvas.height;
+        ctx.strokeRect(x, y, w, h);
+        ctx.font      = `bold ${Math.max(12, canvas.width / 60)}px DM Sans, sans-serif`;
+        ctx.fillStyle = '#22c55e';
+        ctx.shadowBlur = 0;
+        ctx.fillText(`🪁 ${Math.round(b.conf * 100)}%`, x + 2, y - 4);
+      }
+    }
+
     onMounted(() => {
       fetchAll();
       loadHeroBg();
@@ -631,7 +661,7 @@ createApp({
 
     return {
       loading, error, current, hourly, daily, lastUpdate, activeCam, tides,
-      WEBCAMS, heroClass, heroBg, kiteDetection,
+      WEBCAMS, heroClass, heroBg, kiteDetection, lastKite, lastKiteImg, lastKiteCanvas, drawKiteBoxes,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
       allDaysHourly, selectedDayIdx, selectedDayHourly,
       timeAgo, shareToast,

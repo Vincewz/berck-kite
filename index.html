@@ -279,8 +279,32 @@
 
     </template>
 
+    <!-- DERNIER KITE DÉTECTÉ -->
+    <section v-if="lastKite" class="last-kite-section">
+      <h2 class="section-title">Dernier kite détecté</h2>
+      <div class="last-kite-card">
+        <div class="last-kite-img-wrap">
+          <img :src="lastKite.image_url" class="last-kite-img" crossorigin="anonymous"
+               @load="drawKiteBoxes" :data-boxes="JSON.stringify(lastKite.boxes)" ref="lastKiteImg"/>
+          <canvas class="last-kite-canvas" ref="lastKiteCanvas"></canvas>
+        </div>
+        <div class="last-kite-info">
+          <div class="last-kite-date">
+            {{ new Date(lastKite.timestamp).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) }}
+            à {{ new Date(lastKite.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) }}
+          </div>
+          <div class="last-kite-count">
+            🪁 {{ lastKite.kites_detected }} kite{{ lastKite.kites_detected > 1 ? 's' : '' }} détecté{{ lastKite.kites_detected > 1 ? 's' : '' }}
+          </div>
+          <div class="last-kite-conf" v-if="lastKite.boxes && lastKite.boxes.length">
+            Confiance : {{ Math.round(lastKite.boxes[0].conf * 100) }}%
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ERROR -->
-    <div v-else-if="error" class="error-screen">
+    <div v-if="error" class="error-screen">
       <p>⚠ {{ error }}</p>
       <button @click="fetchAll">Réessayer</button>
     </div>

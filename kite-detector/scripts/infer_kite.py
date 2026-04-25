@@ -32,12 +32,22 @@ def to_kt(kmh): return float(kmh) / 1.852
 def has_east_component(deg):
     return 0 < float(deg) % 360 < 180
 
+def load_last_kite():
+    """Lit le last_kite existant pour le conserver si pas de détection."""
+    try:
+        prev = json.loads(STATUS_FILE.read_text())
+        return prev.get("last_kite")
+    except Exception:
+        return None
+
 def save_status(data):
     STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATUS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     print(f"Status sauvegarde: {STATUS_FILE}")
 
 # ── 1. Heure de la journee ────────────────────────────────────────────────────
+last_kite = load_last_kite()
+
 if not (HOUR_START <= now.hour < HOUR_END):
     print(f"Hors plage horaire ({now.hour}h Paris) — skip")
     sys.exit(0)
@@ -78,6 +88,7 @@ if reasons:
         "temp_c":         temp_c,
         "kites_detected": 0,
         "boxes":          [],
+        "last_kite":      last_kite,
     })
     sys.exit(0)
 
@@ -109,15 +120,23 @@ result  = results[0]
 
 boxes = []
 for box in result.boxes:
-    x1, y1, x2, y2 = box.xyxy[0].tolist()
+    x1, y1, x2, y2 = box.xyxyn[0].tolist()  # normalized [0..1]
     conf = float(box.conf[0])
     boxes.append({
-        "x1": round(x1), "y1": round(y1),
-        "x2": round(x2), "y2": round(y2),
+        "x1": round(x1, 4), "y1": round(y1, 4),
+        "x2": round(x2, 4), "y2": round(y2, 4),
         "conf": round(conf, 3),
     })
 
 print(f"  → {len(boxes)} kite(s) detecte(s)")
+
+if len(boxes) > 0:
+    last_kite = {
+        "timestamp":      now.isoformat(),
+        "image_url":      img_url,
+        "kites_detected": len(boxes),
+        "boxes":          boxes,
+    }
 
 save_status({
     "timestamp":      now.isoformat(),
@@ -128,4 +147,5 @@ save_status({
     "kites_detected": len(boxes),
     "boxes":          boxes,
     "image_url":      img_url,
+    "last_kite":      last_kite,
 })

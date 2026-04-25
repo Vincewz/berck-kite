@@ -1,0 +1,35 @@
+name: 📸 Collecte images kite
+
+on:
+  schedule:
+    - cron: '0 19 * * *'   # 21h Paris — après la session du jour
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install requests
+
+      - name: Collecter les images
+        run: python kite-detector/scripts/collect_images.py
+
+      - name: Commit nouvelles images
+        run: |
+          git config user.name  "KiteBerck Bot"
+          git config user.email "bot@kiteberck.fr"
+          git add kite-detector/dataset/raw/
+          git diff --cached --quiet && echo "Rien de nouveau" && exit 0
+          COUNT=$(git diff --cached --name-only | wc -l)
+          TOTAL=$(ls kite-detector/dataset/raw/*.jpg 2>/dev/null | wc -l)
+          git commit -m "📸 +${COUNT} images kite (total: ${TOTAL})"
+          git push

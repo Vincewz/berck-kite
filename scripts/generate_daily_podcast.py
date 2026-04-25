@@ -11,10 +11,11 @@ MISTRAL_KEY = os.environ["MISTRAL_API_KEY"]
 OPENAI_KEY  = os.environ["OPENAI_API_KEY"]
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 
-BASE     = Path(__file__).parent.parent
-JINGLE   = BASE / "podcast" / "jingle_bg.mp3"
-OUT_FILE = BASE / "podcast" / "today.mp3"
-TTS_RAW  = BASE / "podcast" / "tts" / "voice_raw.mp3"
+BASE          = Path(__file__).parent.parent
+JINGLE        = BASE / "podcast" / "jingle_bg.mp3"
+OUT_FILE      = BASE / "podcast" / "today.mp3"
+TTS_RAW       = BASE / "podcast" / "tts" / "voice_raw.mp3"
+HISTORY_FILE  = BASE / "detection_history.json"
 TTS_RAW.parent.mkdir(exist_ok=True)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -132,11 +133,11 @@ def fetch_all(now: datetime):
     except ValueError:
         cur_idx = 6  # fallback 6h matin
 
-    # Prochaines heures aujourd'hui (jusqu'à 20h)
-    end_idx = min(cur_idx + 14, len(hr["time"]))
+    # Toutes les heures d'aujourd'hui (jusqu'à 22h max)
+    end_idx = min(cur_idx + 18, len(hr["time"]))
     hours_today = []
     for i in range(cur_idx, end_idx):
-        h = hr["time"][i][11:16]  # HH:MM
+        h = hr["time"][i][11:16]
         wv_h = float(mr["wave_height"][i]) if mr.get("wave_height") and i < len(mr["wave_height"]) else 0
         hours_today.append({
             "h": h,
@@ -150,8 +151,10 @@ def fetch_all(now: datetime):
             "wave_h": round(wv_h, 1),
         })
 
-    # Pic de vent aujourd'hui
-    peak = max(hours_today, key=lambda x: x["kt"]) if hours_today else None
+    # Fenêtre kite 10h–18h (conditions de la journée)
+    kite_window = [h for h in hours_today if "10:00" <= h["h"] <= "18:00"]
+    peak = max(kite_window, key=lambda x: x["kt"]) if kite_window else (
+           max(hours_today, key=lambda x: x["kt"]) if hours_today else None)
 
     # Demain résumé
     tomorrow_idx = 1  # daily[1] = demain
@@ -174,8 +177,7 @@ def fetch_all(now: datetime):
     tides = next_tides(now, count=4)
 
     return {
-        # Conditions actuelles
-        "now": {
+        "now": {   # snapshot 6h — utile pour mer/soleil/température eau
             "kt":      to_kt(c["wind_speed_10m"]),
             "gkt":     to_kt(c["wind_gusts_10m"]),
             "dir":     dir_label(c["wind_direction_10m"]),
@@ -189,13 +191,30 @@ def fetch_all(now: datetime):
             "sea_temp":round(float(mc["sea_surface_temperature"])) if mc.get("sea_surface_temperature") is not None else None,
             "offshore":offshore_warning(c["wind_direction_10m"]),
         },
-        "hours": hours_today[:8],   # 8 prochaines heures
+        "kite_window": kite_window,   # heures 10h–18h — conditions de la journée
+        "hours": hours_today[:10],
         "peak": peak,
         "tomorrow": tomorrow_data,
         "sunrise": sunrise,
         "sunset": sunset,
         "tides": tides,
     }
+
+# ── 2b. Historique détections kite ───────────────────────────────────────────
+MIN_CONF_PODCAST = 0.5  # confiance minimale pour mentionner dans le podcast
+
+def load_kite_yesterday(today: datetime) -> dict | None:
+    """Retourne la dernière détection confiante du jour précédent, ou None."""
+    try:
+        history = json.loads(HISTORY_FILE.read_text())
+    except Exception:
+        return None
+    yesterday = (today - timedelta(days=1)).date()
+    for entry in reversed(history):
+        ts = datetime.fromisoformat(entry["timestamp"]).date()
+        if ts == yesterday and entry.get("max_conf", 0) >= MIN_CONF_PODCAST:
+            return entry
+    return None
 
 # ── 2. Mistral — contexte maximal, script naturel ────────────────────────────
 SYSTEM_PROMPT = """Tu es la voix du bulletin météo kite de Berck-sur-Mer, diffusé chaque matin sur une web radio locale.
@@ -210,9 +229,11 @@ Règles absolues :
 
 CONTENU — uniquement des faits :
 - Commencer par la date du jour
-- Conditions actuelles : vent (force ET orientation cardinale), rafales, vagues, température de l'eau, météo, température air
+- Conditions prévues pour la journée (fenêtre 10h–18h) : vent (force ET orientation cardinale), rafales, température, météo
+- Vagues et température de l'eau (données marines)
 - Prochaine pleine mer et prochaine basse mer (heure + hauteur)
-- Évolution dans la journée heure par heure si notable
+- Évolution heure par heure si notable (accélération, changement de direction)
+- Si des kites ont été détectés hier par notre système de vision : le mentionner factuellement ("hier, notre système a détecté X kite(s) sur la plage")
 - Aperçu de demain : météo, température, vent avec son orientation cardinale
 - Si vent de terre (offshore) : le mentionner factuellement, sans dramatiser
 - Terminer obligatoirement par : "Bonne journée les Berckois."
@@ -223,21 +244,19 @@ INTERDIT — ne jamais inclure :
 - Jugements de valeur sur les conditions ("parfait pour", "agréable pour")
 - Toute phrase qui dit à l'auditeur quoi faire ou ressentir"""
 
-def generate_script(data: dict, date_str: str) -> str:
+def generate_script(data: dict, date_str: str, kite_yesterday: dict | None = None) -> str:
     n = data["now"]
     p = data["peak"]
     t = data["tomorrow"]
-    hours = data["hours"]
+    kw = data.get("kite_window", [])
 
-    # Résumé horaire
-    evolution = ""
-    if hours:
-        slots = []
-        for h in hours[1:6]:  # prochaines 5 heures
-            slots.append(f"{h['h']} : {h['kt']}kt {h['dir']}, {h['weather']}")
-        evolution = " | ".join(slots)
+    # Résumé fenêtre kite 10h–18h heure par heure
+    kite_slots = " | ".join(
+        f"{h['h']} : {h['kt']}kt {h['dir']}, {h['weather']}, {h['temp']}°C"
+        for h in kw
+    ) if kw else "données indisponibles"
 
-    # Marées — prochaine PM et prochaine BM uniquement
+    # Marées
     tides = data.get("tides", [])
     next_pm = next((td for td in tides if td["type"] == "PM"), None)
     next_bm = next((td for td in tides if td["type"] == "BM"), None)
@@ -247,22 +266,30 @@ def generate_script(data: dict, date_str: str) -> str:
 
     offshore_note = f"\n⚠ ALERTE OFFSHORE : {n['offshore']}" if n['offshore'] else ""
 
-    user_msg = f"""Bulletin du {date_str} — généré à {datetime.now().strftime('%H:%M')}
+    # Kites détectés hier
+    kite_note = ""
+    if kite_yesterday:
+        kn = kite_yesterday["kites_detected"]
+        kite_note = (
+            f"\nKITES DÉTECTÉS HIER (caméra IA) :\n"
+            f"  {kn} kite{'s' if kn > 1 else ''} détecté{'s' if kn > 1 else ''} "
+            f"à {kite_yesterday['timestamp'][11:16]} "
+            f"— vent {kite_yesterday['wind_kt']}kt {dir_label(kite_yesterday['wind_dir'])}\n"
+        )
 
-MAINTENANT :
-  Vent : {n['dir']} ({n['deg']}°) — {n['kt']} nœuds, rafales {n['gkt']} nœuds
+    user_msg = f"""Bulletin du {date_str} — généré à 6h00
+
+DONNÉES MARINES (actuelles) :
   Mer : vagues {n['wave_h']}m, période {n['wave_p']}s, houle de {n['wave_dir']}{f", température eau {n['sea_temp']}°C" if n.get('sea_temp') is not None else ""}
-  Ciel : {n['weather']}
-  Température : {n['temp']}°C (ressenti {n['feels']}°C)
   Lever soleil : {data['sunrise']} — Coucher : {data['sunset']}{offshore_note}
 
 MARÉES (prochains PM/BM) :
 {tides_str}
-ÉVOLUTION AUJOURD'HUI :
-  {evolution}
+PRÉVISIONS JOURNÉE (10h–18h) :
+  {kite_slots}
 
-  Pic de vent prévu : {p['h'] if p else '?'} — {p['kt'] if p else '?'} nœuds {p['dir'] if p else ''}, rafales {p['gkt'] if p else '?'} nœuds
-
+  Pic de vent : {p['h'] if p else '?'} — {p['kt'] if p else '?'} nœuds {p['dir'] if p else ''}, rafales {p['gkt'] if p else '?'} nœuds
+{kite_note}
 DEMAIN :
   {t['weather'].capitalize()}, {t['temp_min']}–{t['temp_max']}°C
   Vent : {t['dir']} — max {t['kt_max']} nœuds, rafales {t['gkt_max']} nœuds
@@ -381,8 +408,14 @@ if __name__ == "__main__":
     if data["peak"]:
         print(f"  Pic : {data['peak']['h']} → {data['peak']['kt']}kt")
 
+    kite_yesterday = load_kite_yesterday(now)
+    if kite_yesterday:
+        print(f"  Kites hier : {kite_yesterday['kites_detected']} détecté(s) — conf {kite_yesterday['max_conf']:.0%}")
+    else:
+        print("  Pas de détection kite confiante hier")
+
     print("\nScript Mistral...")
-    script = generate_script(data, date_str)
+    script = generate_script(data, date_str, kite_yesterday)
     print(f"\n--- SCRIPT ({len(script.split())} mots) ---\n{script}\n---\n")
     (BASE / "podcast" / "tts" / "script.txt").write_text(script, encoding="utf-8")
 

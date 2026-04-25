@@ -32,6 +32,8 @@ def to_kt(kmh): return float(kmh) / 1.852
 def has_east_component(deg):
     return 0 < float(deg) % 360 < 180
 
+HISTORY_FILE = BASE_DIR.parent / "berck-kite" / "detection_history.json"
+
 def load_last_kite():
     """Lit le last_kite existant pour le conserver si pas de détection."""
     try:
@@ -39,6 +41,16 @@ def load_last_kite():
         return prev.get("last_kite")
     except Exception:
         return None
+
+def append_history(entry: dict):
+    """Ajoute une détection positive à l'historique."""
+    try:
+        history = json.loads(HISTORY_FILE.read_text()) if HISTORY_FILE.exists() else []
+    except Exception:
+        history = []
+    history.append(entry)
+    HISTORY_FILE.write_text(json.dumps(history, indent=2, ensure_ascii=False))
+    print(f"Historique: {len(history)} entrée(s)")
 
 def save_status(data):
     STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -137,6 +149,16 @@ if len(boxes) > 0:
         "kites_detected": len(boxes),
         "boxes":          boxes,
     }
+    max_conf = max(b["conf"] for b in boxes)
+    append_history({
+        "timestamp":      now.isoformat(),
+        "wind_kt":        round(wind_kt, 1),
+        "wind_dir":       round(wind_dir),
+        "temp_c":         temp_c,
+        "kites_detected": len(boxes),
+        "max_conf":       round(max_conf, 3),
+        "image_url":      img_url,
+    })
 
 save_status({
     "timestamp":      now.isoformat(),

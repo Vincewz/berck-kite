@@ -31,7 +31,7 @@ jobs:
         run: |
           git config user.name  "KiteBerck Bot"
           git config user.email "bot@kiteberck.fr"
-          git add berck-kite/kite_status.json
+          git add berck-kite/kite_status.json berck-kite/detection_history.json
           git diff --cached --quiet && echo "Aucun changement" && exit 0
           DATE=$(date +'%Y-%m-%d %H:%M')
           git commit -m "🪁 Détection kite ${DATE}"

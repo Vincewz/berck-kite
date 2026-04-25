@@ -1,12 +1,37 @@
-name: 🪁 Détection kites YOLO
+name: Détection kites YOLO
 
 on:
   schedule:
-    - cron: '0 11 * * *'   # 13h Paris (CEST UTC+2) — heure de pointe session
+    - cron: '30 8  * * *'   # 10h30 Paris (CEST UTC+2)
+    - cron: '30 12 * * *'   # 14h30 Paris
+    - cron: '30 15 * * *'   # 17h30 Paris
   workflow_dispatch:
 
 jobs:
+  # ── Job 1 : vérification conditions (rapide, pas de torch) ─────────────────
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      conditions_ok: ${{ steps.cond.outputs.conditions_ok }}
+      reason:        ${{ steps.cond.outputs.reason }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install requests --quiet
+
+      - name: Vérifier conditions
+        id: cond
+        run: python kite-detector/scripts/check_conditions.py
+
+  # ── Job 2 : inférence YOLO (uniquement si conditions OK) ───────────────────
   detect:
+    needs: check
+    if: needs.check.outputs.conditions_ok == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,9 +43,9 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Installer dépendances
+      - name: Installer torch + ultralytics
         run: |
-          pip install requests
+          pip install requests --quiet
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --quiet
           pip install ultralytics --quiet
 
@@ -34,5 +59,5 @@ jobs:
           git add berck-kite/kite_status.json berck-kite/detection_history.json
           git diff --cached --quiet && echo "Aucun changement" && exit 0
           DATE=$(date +'%Y-%m-%d %H:%M')
-          git commit -m "🪁 Détection kite ${DATE}"
+          git commit -m "Détection kite ${DATE}"
           git push

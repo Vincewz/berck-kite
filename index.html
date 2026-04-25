@@ -287,18 +287,11 @@
           <img :src="lastKite.image_url" class="last-kite-img" crossorigin="anonymous"
                @load="drawKiteBoxes" ref="lastKiteImg" style="display:none"/>
           <canvas class="last-kite-canvas" ref="lastKiteCanvas"
-            :style="{ cursor: kiteDragging ? 'grabbing' : 'grab' }"
-            @wheel.prevent="onKiteWheel"
-            @mousedown="onKiteMouseDown"
-            @mousemove="onKiteMouseMove"
-            @mouseup="onKiteMouseUp"
-            @mouseleave="onKiteMouseUp"
-            @touchstart.prevent="onKiteTouchStart"
-            @touchmove.prevent="onKiteTouchMove"
-            @touchend="onKiteTouchEnd"
-            @dblclick="resetKiteView">
+            style="cursor:zoom-in"
+            @click="openKiteModal"
+            title="Cliquer pour agrandir">
           </canvas>
-          <button class="kite-reset-btn" @click="resetKiteView" title="Réinitialiser la vue">⊙</button>
+          <div class="kite-expand-hint">⤢</div>
         </div>
         <div class="last-kite-info">
           <div class="last-kite-date">
@@ -314,6 +307,12 @@
         </div>
       </div>
     </section>
+
+    <!-- MODAL KITE PLEIN ÉCRAN -->
+    <div class="kite-modal-bg" v-if="kiteModalOpen" @click="closeKiteModal">
+      <canvas class="kite-modal-canvas" ref="kiteModalCanvas"></canvas>
+      <button class="kite-modal-close" @click.stop="closeKiteModal">✕</button>
+    </div>
 
     <!-- ERROR -->
     <div v-if="error" class="error-screen">

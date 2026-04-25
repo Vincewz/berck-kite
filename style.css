@@ -635,20 +635,47 @@ nav {
   width: 100%;
   height: 100%;
 }
-.kite-reset-btn {
+.kite-expand-hint {
   position: absolute;
-  top: 10px; right: 10px;
+  bottom: 10px; right: 10px;
   background: rgba(0,0,0,.45);
-  border: 1px solid rgba(255,255,255,.2);
-  color: #fff;
-  width: 30px; height: 30px;
+  color: rgba(255,255,255,.8);
+  font-size: .85rem;
+  padding: 3px 7px;
   border-radius: 6px;
-  font-size: 1rem; line-height: 1;
-  cursor: pointer;
+  pointer-events: none;
+  letter-spacing: .02em;
+}
+
+/* ── MODAL KITE PLEIN ÉCRAN ──────────────────────────────────────────────── */
+.kite-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+.kite-modal-canvas {
+  display: block;
+  width: 96vw;
+  height: 92vh;
+  max-width: 1400px;
+}
+.kite-modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: rgba(255,255,255,.15);
+  border: none; color: white;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 1rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background .15s;
 }
-.kite-reset-btn:hover { background: rgba(0,0,0,.65); }
+.kite-modal-close:hover { background: rgba(255,255,255,.28); }
 .last-kite-info {
   padding: 14px 18px;
   display: flex;

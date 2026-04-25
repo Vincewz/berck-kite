@@ -2,9 +2,14 @@ name: Détection kites YOLO
 
 on:
   schedule:
-    - cron: '30 8  * * *'   # 10h30 Paris (CEST UTC+2)
-    - cron: '30 12 * * *'   # 14h30 Paris
-    - cron: '30 15 * * *'   # 17h30 Paris
+    - cron: '20 8  * * *'   # 10:20 Paris (CEST UTC+2) — image XX:00 dispo ~XX:10
+    - cron: '20 9  * * *'   # 11:20 Paris
+    - cron: '20 10 * * *'   # 12:20 Paris
+    - cron: '20 11 * * *'   # 13:20 Paris
+    - cron: '20 12 * * *'   # 14:20 Paris
+    - cron: '20 13 * * *'   # 15:20 Paris
+    - cron: '20 14 * * *'   # 16:20 Paris
+    - cron: '20 15 * * *'   # 17:20 Paris
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,33 @@
+name: Prévision kites du jour
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 7h Paris (CEST UTC+2)
+  workflow_dispatch:
+
+jobs:
+  forecast:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install requests --quiet
+
+      - name: Générer les prévisions du jour
+        run: python kite-detector/scripts/forecast_kite.py
+
+      - name: Commit prévisions
+        run: |
+          git config user.name  "KiteBerck Bot"
+          git config user.email "bot@berck.info"
+          git add berck-kite/kite_forecast.json
+          git diff --cached --quiet && echo "Aucun changement" && exit 0
+          git commit -m "Prévision kite $(date +'%Y-%m-%d')"
+          git push

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>🪁 Kite Berck</title>
+  <title>Kite Berck</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"/>
@@ -63,10 +63,10 @@
         <div v-if="kiteDetection" class="kite-detection-badge"
              :class="kiteDetection.kites_detected > 0 ? 'kite-badge-found' : kiteDetection.conditions_ok ? 'kite-badge-none' : 'kite-badge-skip'">
           <span v-if="kiteDetection.kites_detected > 0">
-            🪁 {{ kiteDetection.kites_detected }} kite{{ kiteDetection.kites_detected > 1 ? 's' : '' }} détecté{{ kiteDetection.kites_detected > 1 ? 's' : '' }} aujourd'hui
+            {{ kiteDetection.kites_detected }} kite{{ kiteDetection.kites_detected > 1 ? 's' : '' }} détecté{{ kiteDetection.kites_detected > 1 ? 's' : '' }} aujourd'hui
           </span>
-          <span v-else-if="kiteDetection.conditions_ok">🔍 Aucun kite détecté aujourd'hui</span>
-          <span v-else>📊 Conditions non réunies aujourd'hui</span>
+          <span v-else-if="kiteDetection.conditions_ok">Aucun kite détecté aujourd'hui</span>
+          <span v-else>Conditions non réunies aujourd'hui</span>
         </div>
 
         <!-- ── BOUTON PARTAGE ── -->
@@ -294,7 +294,7 @@
             à {{ new Date(lastKite.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) }}
           </div>
           <div class="last-kite-count">
-            🪁 {{ lastKite.kites_detected }} kite{{ lastKite.kites_detected > 1 ? 's' : '' }} détecté{{ lastKite.kites_detected > 1 ? 's' : '' }}
+            {{ lastKite.kites_detected }} kite{{ lastKite.kites_detected > 1 ? 's' : '' }} détecté{{ lastKite.kites_detected > 1 ? 's' : '' }}
           </div>
           <div class="last-kite-conf" v-if="lastKite.boxes && lastKite.boxes.length">
             Confiance : {{ Math.round(lastKite.boxes[0].conf * 100) }}%

@@ -600,19 +600,19 @@ createApp({
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = '#22c55e';
-      ctx.lineWidth   = Math.max(2, canvas.width / 200);
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
-      ctx.shadowBlur  = 4;
+      ctx.lineWidth   = 1.5;
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur  = 3;
       for (const b of lastKite.value.boxes) {
         const x = b.x1 * canvas.width;
         const y = b.y1 * canvas.height;
         const w = (b.x2 - b.x1) * canvas.width;
         const h = (b.y2 - b.y1) * canvas.height;
         ctx.strokeRect(x, y, w, h);
-        ctx.font      = `bold ${Math.max(12, canvas.width / 60)}px DM Sans, sans-serif`;
+        ctx.font      = `600 ${Math.max(10, canvas.width / 80)}px DM Sans, sans-serif`;
         ctx.fillStyle = '#22c55e';
         ctx.shadowBlur = 0;
-        ctx.fillText(`🪁 ${Math.round(b.conf * 100)}%`, x + 2, y - 4);
+        ctx.fillText(`${Math.round(b.conf * 100)}%`, x + 2, y - 3);
       }
     }
 
@@ -647,7 +647,7 @@ createApp({
         return parts.length ? `\n🕐 ${parts.join(' | ')}` : '';
       })() : '';
       const temp = `\n🌡️ ${Math.round(c.temperature_2m)}°C`;
-      const text = `🪁 Berck-sur-Mer — ${date}\n💨 ${dir} · ${kt} nœuds · rafales ${gkt}${wh}${temp}${tide}\n\nhttps://kiteberck.fr`;
+      const text = `Berck-sur-Mer — ${date}\n💨 ${dir} · ${kt} nœuds · rafales ${gkt}${wh}${temp}${tide}\n\nhttps://kiteberck.fr`;
 
       if (navigator.share) {
         navigator.share({ text }).catch(() => {});

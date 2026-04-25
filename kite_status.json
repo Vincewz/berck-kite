@@ -8,11 +8,13 @@
   "kites_detected": 0,
   "boxes": [],
   "last_kite": {
-    "timestamp": "2026-03-28T11:00:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/03/28/large/11-00.jpg",
-    "kites_detected": 1,
+    "timestamp": "2026-04-11T17:00:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/04/11/large/17-00.jpg",
+    "kites_detected": 3,
     "boxes": [
-      {"x1": 0.639, "y1": 0.424, "x2": 0.650, "y2": 0.445, "conf": 0.845}
+      {"x1": 0.2699, "y1": 0.4272, "x2": 0.2813, "y2": 0.4445, "conf": 0.692},
+      {"x1": 0.3941, "y1": 0.4290, "x2": 0.4063, "y2": 0.4445, "conf": 0.538},
+      {"x1": 0.5061, "y1": 0.4334, "x2": 0.5172, "y2": 0.4538, "conf": 0.535}
     ]
   }
 }

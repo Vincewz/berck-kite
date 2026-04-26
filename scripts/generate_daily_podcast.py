@@ -56,7 +56,7 @@ def offshore_warning(deg):
 # ── Modèle harmonique marées (porté depuis app.js) ───────────────────────────
 import math as _math
 
-_TIDE_REF_HW_MS = 1745398800000  # 2026-04-23T06:00:00Z en ms
+_TIDE_REF_HW_MS = 1776924000000  # 2026-04-23T06:00:00Z en ms
 _M2_MS   = 44712000              # période M2 : 12h25min12s
 _MSF_MS  = 14.77 * 86400000      # cycle vives/mortes-eaux
 

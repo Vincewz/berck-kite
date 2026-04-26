@@ -233,7 +233,7 @@ CONTENU — uniquement des faits :
 - Vagues et température de l'eau (données marines)
 - Prochaine pleine mer et prochaine basse mer (heure + hauteur)
 - Évolution heure par heure si notable (accélération, changement de direction)
-- Si des kites ont été détectés hier par notre système de vision : le mentionner factuellement ("hier, notre système a détecté X kite(s) sur la plage")
+- Si des kites ont été observés hier : dire simplement "quelques kitesurfs à l'eau hier", sans mentionner de système, de caméra ou de détection automatique. Si aucun kite n'a été observé : ne rien dire sur les kites, ne pas signaler l'absence.
 - Aperçu de demain : météo, température, vent avec son orientation cardinale
 - Si vent de terre (offshore) : le mentionner factuellement, sans dramatiser
 - Terminer obligatoirement par : "Bonne journée les Berckois."
@@ -266,16 +266,10 @@ def generate_script(data: dict, date_str: str, kite_yesterday: dict | None = Non
 
     offshore_note = f"\n⚠ ALERTE OFFSHORE : {n['offshore']}" if n['offshore'] else ""
 
-    # Kites détectés hier
+    # Kites détectés hier (mentionner seulement si détection confiante)
     kite_note = ""
     if kite_yesterday:
-        kn = kite_yesterday["kites_detected"]
-        kite_note = (
-            f"\nKITES DÉTECTÉS HIER (caméra IA) :\n"
-            f"  {kn} kite{'s' if kn > 1 else ''} détecté{'s' if kn > 1 else ''} "
-            f"à {kite_yesterday['timestamp'][11:16]} "
-            f"— vent {kite_yesterday['wind_kt']}kt {dir_label(kite_yesterday['wind_dir'])}\n"
-        )
+        kite_note = "\nKITES HIER : quelques kitesurfs à l'eau hier.\n"
 
     user_msg = f"""Bulletin du {date_str} — généré à 6h00
 

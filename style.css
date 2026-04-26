@@ -276,20 +276,17 @@ nav {
 /* Vent de terre/mer — pleine largeur */
 .q-wind-origin { grid-column: 1 / -1; min-height: 0; }
 
+/* Vagues / autres — pleine largeur optionnelle */
+.q-full { grid-column: 1 / -1; }
+
 /* Marées — pleine largeur */
 .q-tides { grid-column: 1 / -1; min-height: 0; }
-.q-origin-body { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.q-origin-icon { font-size: 1.8rem; flex-shrink: 0; line-height: 1; }
-.q-origin-text { flex: 1; min-width: 0; }
+.q-origin-body { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
 .q-origin-dir  { font-size: .78rem; color: var(--muted); font-weight: 600; flex-shrink: 0; }
 
-/* Vent offshore — accent terracotta fort */
-.q-card.q-danger.q-wind-origin {
-  background: #fdf0ec;
-  border-color: var(--terra);
-  border-left-width: 3px;
-}
-.q-card.q-danger.q-wind-origin .q-answer { color: var(--terra); font-size: 1.05rem; }
+/* Vent de terre — accent coloré */
+.q-card.q-danger.q-wind-origin { background: #fdf0ec; border-color: var(--terra); border-left-width: 3px; }
+.q-card.q-danger.q-wind-origin .q-answer { color: var(--terra); }
 .q-card.q-warn.q-wind-origin   .q-answer { color: var(--orange); }
 .q-card.q-ideal.q-wind-origin  .q-answer { color: var(--green); }
 .q-card.q-ok.q-wind-origin     .q-answer { color: var(--blue); }
@@ -320,47 +317,6 @@ nav {
   50%       { opacity: 0.55; transform: scaleY(1.0); }
 }
 
-/* ── TIDE VISUAL CSS ─────────────────────────────────────────────────────── */
-.tide-visual {
-  position: relative; width: 100%; height: 72px;
-  border-radius: 10px; overflow: hidden;
-  margin: 6px 0 4px;
-  border: 1px solid var(--border);
-  display: flex; flex-direction: column;
-}
-.tide-visual-sky {
-  flex: 1;
-  background: linear-gradient(180deg, #c8e8f8 0%, #a0d0ee 100%);
-}
-.tide-visual-sea {
-  position: absolute; bottom: 8px; left: 0; right: 0;
-  min-height: 12px; max-height: calc(100% - 16px);
-  background: linear-gradient(180deg, #2da8d8 0%, #0e75a8 100%);
-  transition: height .8s ease;
-  overflow: hidden;
-}
-.tide-visual-foam {
-  position: absolute; top: 0; left: -40px; right: -40px; height: 6px;
-  background: repeating-linear-gradient(90deg,
-    transparent 0, transparent 12px,
-    rgba(255,255,255,.55) 12px, rgba(255,255,255,.55) 22px);
-  animation: foamMove 3s linear infinite;
-}
-@keyframes foamMove {
-  from { transform: translateX(0); }
-  to   { transform: translateX(22px); }
-}
-.tide-visual-sand {
-  height: 8px;
-  background: linear-gradient(180deg, #d4b060 0%, #b89040 100%);
-}
-.tide-visual-label {
-  position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: .85rem; font-weight: 700;
-  color: white; text-shadow: 0 1px 4px rgba(0,0,0,.4);
-  pointer-events: none;
-}
 
 /* ── TIDE JAUGE HORIZONTALE ──────────────────────────────────────────────── */
 .tide-hbar {

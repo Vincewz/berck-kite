@@ -95,144 +95,6 @@
       </section>
 
       <!-- ═══════════════════════════════════════════
-           5 INFOS — 2 colonnes, vent de terre en premier
-      ════════════════════════════════════════════ -->
-      <section class="questions-grid">
-
-        <!-- Vent de terre ou mer — PLEINE LARGEUR, info critique -->
-        <div class="q-card q-wind-origin" :class="windOrigin.cls">
-          <div class="q-label">Vent de terre ou mer ?</div>
-          <div class="q-origin-body">
-            <span class="q-origin-icon">{{ windOrigin.icon }}</span>
-            <div class="q-origin-text">
-              <div class="q-answer">{{ windOrigin.label }}</div>
-              <div class="q-sub">{{ windOrigin.description }}</div>
-            </div>
-            <div class="q-origin-dir">
-              {{ dirLabel(current.wind_direction_10m) }}&nbsp;{{ current.wind_direction_10m }}°
-            </div>
-          </div>
-        </div>
-
-        <!-- Météo à venir -->
-        <div class="q-card q-weather" v-if="weatherForecast">
-          <div class="q-label">Météo</div>
-          <div class="weather-top">
-            <div class="weather-temp">{{ weatherForecast.currTemp }}°</div>
-            <div class="sea-temp" v-if="seaTemp !== null">🌊 <b>{{ seaTemp }}°C</b></div>
-          </div>
-          <div class="weather-slots">
-            <div class="weather-slot" v-for="s in weatherForecast.slots" :key="s.hour">
-              <span class="ws-hour">{{ s.hour }}</span>
-              <span class="ws-icon">{{ s.icon }}</span>
-              <span class="ws-temp">{{ s.temp }}°</span>
-              <span class="ws-prob" v-if="s.prob > 10">{{ s.prob }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Vagues -->
-        <div class="q-card q-waves" :class="waveInfo.cls">
-          <div class="q-label">Vagues</div>
-          <div class="wave-display">
-            <span class="wave-h-num">{{ waveInfo.h }}</span><span class="wave-h-unit">m</span>
-          </div>
-          <div class="wave-bars">
-            <div v-for="(b, i) in waveInfo.bars" :key="i"
-              class="wave-bar"
-              :style="{ height: b + '%', animationDelay: (i * 0.18) + 's' }">
-            </div>
-          </div>
-          <div class="q-sub">{{ waveInfo.period !== '—' ? waveInfo.period + 's · ' : '' }}{{ waveInfo.label }}</div>
-        </div>
-
-        <!-- Prochains jours -->
-        <div class="q-card">
-          <div class="q-label">Prochains jours</div>
-          <div class="q-weekend" v-if="nextDays.length">
-            <div v-for="d in nextDays.slice(1, 6)" :key="d.label" class="q-wday">
-              <span class="wday-label">{{ d.label }}</span>
-              <div class="wday-bar-wrap">
-                <div class="wday-bar" :style="{ width: Math.min(100, d.kt/40*100)+'%', background: d.color }"></div>
-              </div>
-              <span class="wday-kt" :style="{ color: d.color }">{{ d.kt }}kt</span>
-              <span class="wday-dir">{{ d.dir }}</span>
-              <span v-if="d.offshore === true" class="wday-offshore">⚠ terre</span>
-            </div>
-          </div>
-          <div class="q-answer" v-else>Pas de données</div>
-        </div>
-
-        <!-- Marées — visualisation plage (pleine largeur) -->
-        <div class="q-card q-tides">
-          <div class="q-label">Marées</div>
-          <!-- Visualisation CSS marée -->
-          <div class="tide-visual">
-            <div class="tide-visual-sky"></div>
-            <div class="tide-visual-sea" :style="{ height: (tideNow.pct * 100) + '%' }">
-              <div class="tide-visual-foam"></div>
-            </div>
-            <div class="tide-visual-sand"></div>
-            <span class="tide-visual-label">{{ tideNow.h }}m</span>
-          </div>
-
-          <!-- ── JAUGE HORIZONTALE ── -->
-          <div class="tide-hbar">
-            <span class="tide-hbar-lbl lw">▽ BM</span>
-            <div class="tide-hbar-track">
-              <div class="tide-hbar-fill" :style="{ width: (tideNow.pct * 100) + '%' }"></div>
-              <div class="tide-hbar-dot" :style="{ left: (tideNow.pct * 100) + '%' }">
-                <span class="tide-hbar-val">{{ tideNow.h }}m</span>
-              </div>
-              <!-- tick mi-marée -->
-              <div class="tide-hbar-tick"></div>
-            </div>
-            <span class="tide-hbar-lbl hw">▲ PM</span>
-          </div>
-
-          <!-- Coefficient -->
-          <div class="tide-coeff-row">
-            <span class="tide-coeff-val">{{ tideNow.coeff }}</span>
-            <span class="tide-coeff-label" :class="tideNow.coeffCls">{{ tideNow.coeffLabel }}</span>
-            <div class="tide-coeff-bar">
-              <div class="tide-coeff-fill" :class="tideNow.coeffCls" :style="{ width: ((tideNow.coeff - 20) / 100 * 100) + '%' }"></div>
-            </div>
-          </div>
-
-          <!-- Prochains PM/BM -->
-          <template v-if="tides.length">
-            <div class="q-tide-row" v-for="t in tides.slice(0,4)" :key="t.t">
-              <span class="q-tide-type" :class="t.type === 'HW' ? 'hw' : 'lw'">
-                {{ t.type === 'HW' ? '▲ PM' : '▽ BM' }}
-              </span>
-              <span class="q-tide-time">{{ t.timeStr }}</span>
-              <span class="q-tide-h">{{ t.hStr }}m</span>
-            </div>
-          </template>
-        </div>
-
-
-      </section>
-
-      <!-- ═══════════════════════════════════════════
-           GRAPHIQUE 24H
-      ════════════════════════════════════════════ -->
-      <section class="chart-section">
-        <div class="section-title">Vent 24h <span class="badge-arome">AROME 1.3km</span></div>
-        <div class="chart-wrap">
-          <canvas id="windChart"></canvas>
-        </div>
-      </section>
-
-      <!-- ═══════════════════════════════════════════
-           CARTE VENT LOCALE
-      ════════════════════════════════════════════ -->
-      <section class="map-section">
-        <div class="section-title">🗺️ Carte vent <span class="badge-arome">AROME</span></div>
-        <div id="berck-map"></div>
-      </section>
-
-      <!-- ═══════════════════════════════════════════
            TABLEAU PRÉVISIONS SEMAINE — style Windguru
       ════════════════════════════════════════════ -->
       <section class="wg-section" v-if="wgForecast && wgForecast.length">
@@ -299,6 +161,113 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           5 INFOS — 2 colonnes, vent de terre en premier
+      ════════════════════════════════════════════ -->
+      <section class="questions-grid">
+
+        <!-- Vent de terre ou mer — PLEINE LARGEUR -->
+        <div class="q-card q-wind-origin" :class="windOrigin.cls">
+          <div class="q-label">Vent de terre ou mer ?</div>
+          <div class="q-origin-body">
+            <div class="q-answer">{{ windOrigin.label }}</div>
+            <div class="q-origin-dir">
+              {{ dirLabel(current.wind_direction_10m) }}&nbsp;{{ current.wind_direction_10m }}°
+            </div>
+          </div>
+        </div>
+
+        <!-- Météo à venir -->
+        <div class="q-card q-weather" v-if="weatherForecast">
+          <div class="q-label">Météo</div>
+          <div class="weather-top">
+            <div class="weather-temp">{{ weatherForecast.currTemp }}°</div>
+            <div class="sea-temp" v-if="seaTemp !== null">🌊 <b>{{ seaTemp }}°C</b></div>
+          </div>
+          <div class="weather-slots">
+            <div class="weather-slot" v-for="s in weatherForecast.slots" :key="s.hour">
+              <span class="ws-hour">{{ s.hour }}</span>
+              <span class="ws-icon">{{ s.icon }}</span>
+              <span class="ws-temp">{{ s.temp }}°</span>
+              <span class="ws-prob" v-if="s.prob > 10">{{ s.prob }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vagues — pleine largeur -->
+        <div class="q-card q-waves q-full" :class="waveInfo.cls">
+          <div class="q-label">Vagues</div>
+          <div class="wave-display">
+            <span class="wave-h-num">{{ waveInfo.h }}</span><span class="wave-h-unit">m</span>
+          </div>
+          <div class="wave-bars">
+            <div v-for="(b, i) in waveInfo.bars" :key="i"
+              class="wave-bar"
+              :style="{ height: b + '%', animationDelay: (i * 0.18) + 's' }">
+            </div>
+          </div>
+          <div class="q-sub">{{ waveInfo.period !== '—' ? waveInfo.period + 's · ' : '' }}{{ waveInfo.label }}</div>
+        </div>
+
+        <!-- Marées — visualisation plage (pleine largeur) -->
+        <div class="q-card q-tides">
+          <div class="q-label">Marées</div>
+          <!-- ── JAUGE HORIZONTALE ── -->
+          <div class="tide-hbar">
+            <span class="tide-hbar-lbl lw">▽ BM</span>
+            <div class="tide-hbar-track">
+              <div class="tide-hbar-fill" :style="{ width: (tideNow.pct * 100) + '%' }"></div>
+              <div class="tide-hbar-dot" :style="{ left: (tideNow.pct * 100) + '%' }">
+                <span class="tide-hbar-val">{{ tideNow.h }}m</span>
+              </div>
+              <!-- tick mi-marée -->
+              <div class="tide-hbar-tick"></div>
+            </div>
+            <span class="tide-hbar-lbl hw">▲ PM</span>
+          </div>
+
+          <!-- Coefficient -->
+          <div class="tide-coeff-row">
+            <span class="tide-coeff-val">{{ tideNow.coeff }}</span>
+            <span class="tide-coeff-label" :class="tideNow.coeffCls">{{ tideNow.coeffLabel }}</span>
+            <div class="tide-coeff-bar">
+              <div class="tide-coeff-fill" :class="tideNow.coeffCls" :style="{ width: ((tideNow.coeff - 20) / 100 * 100) + '%' }"></div>
+            </div>
+          </div>
+
+          <!-- Prochains PM/BM -->
+          <template v-if="tides.length">
+            <div class="q-tide-row" v-for="t in tides.slice(0,4)" :key="t.t">
+              <span class="q-tide-type" :class="t.type === 'HW' ? 'hw' : 'lw'">
+                {{ t.type === 'HW' ? '▲ PM' : '▽ BM' }}
+              </span>
+              <span class="q-tide-time">{{ t.timeStr }}</span>
+              <span class="q-tide-h">{{ t.hStr }}m</span>
+            </div>
+          </template>
+        </div>
+
+
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           GRAPHIQUE 24H
+      ════════════════════════════════════════════ -->
+      <section class="chart-section">
+        <div class="section-title">Vent 24h <span class="badge-arome">AROME 1.3km</span></div>
+        <div class="chart-wrap">
+          <canvas id="windChart"></canvas>
+        </div>
+      </section>
+
+      <!-- ═══════════════════════════════════════════
+           CARTE VENT LOCALE
+      ════════════════════════════════════════════ -->
+      <section class="map-section">
+        <div class="section-title">🗺️ Carte vent <span class="badge-arome">AROME</span></div>
+        <div id="berck-map"></div>
       </section>
 
       <!-- ═══════════════════════════════════════════

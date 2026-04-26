@@ -233,27 +233,70 @@
       </section>
 
       <!-- ═══════════════════════════════════════════
-           DÉTAIL HORAIRE — sélecteur de jour
+           TABLEAU PRÉVISIONS SEMAINE — style Windguru
       ════════════════════════════════════════════ -->
-      <section class="days-detail" v-if="allDaysHourly.length">
-        <div class="section-title">Détail horaire</div>
-        <div class="day-tabs">
-          <button
-            v-for="(day, i) in allDaysHourly" :key="i"
-            class="day-tab" :class="{ active: selectedDayIdx === i }"
-            @click="selectedDayIdx = i">
-            {{ day.tabLabel }}
-          </button>
-        </div>
-        <div class="day-slots" v-if="selectedDayHourly">
-          <div class="day-slot" v-for="h in selectedDayHourly.slots" :key="h.hour" :class="{ 'slot-past': h.isPast }">
-            <span class="slot-hour">{{ h.hour }}</span>
-            <div class="slot-bar-wrap">
-              <div class="slot-bar" :style="{ width: Math.min(100, h.kt/40*100)+'%', opacity: h.isPast ? 0.3 : 1, background: speedColor(h.speed) }"></div>
+      <section class="wg-section" v-if="wgForecast && wgForecast.length">
+        <div class="section-title">Prévisions semaine <span class="badge-arome">AROME</span></div>
+        <div class="wg-wrap">
+
+          <!-- Colonne labels (fixe gauche) -->
+          <div class="wg-label-col">
+            <div class="wg-lrow wg-l-date"></div>
+            <div class="wg-lrow wg-l-h">h</div>
+            <div class="wg-lrow wg-l-wind">kt</div>
+            <div class="wg-lrow wg-l-raf">raf.</div>
+            <div class="wg-lrow wg-l-dir">dir</div>
+            <div class="wg-lrow wg-l-temp">°C</div>
+          </div>
+
+          <!-- Données scrollables -->
+          <div class="wg-data">
+            <div class="wg-day-col"
+                 v-for="g in wgForecast" :key="g.ds"
+                 :class="{ 'wg-today': g.isToday }">
+
+              <!-- En-tête jour -->
+              <div class="wg-day-hdr">{{ g.label }}</div>
+
+              <!-- Heures -->
+              <div class="wg-drow wg-row-h">
+                <div class="wg-dcell" v-for="(s,i) in g.slots" :key="i"
+                     :class="{ 'wg-past': s.isPast }">{{ s.hh }}</div>
+              </div>
+
+              <!-- Vent (coloré) -->
+              <div class="wg-drow wg-row-wind">
+                <div class="wg-dcell" v-for="(s,i) in g.slots" :key="i"
+                     :class="{ 'wg-past': s.isPast }"
+                     :style="{ background: wgWindBg(s.kt), color: wgWindFg(s.kt) }">
+                  {{ s.kt }}
+                </div>
+              </div>
+
+              <!-- Rafales -->
+              <div class="wg-drow wg-row-raf">
+                <div class="wg-dcell" v-for="(s,i) in g.slots" :key="i"
+                     :class="{ 'wg-past': s.isPast }">{{ s.gkt }}</div>
+              </div>
+
+              <!-- Direction -->
+              <div class="wg-drow wg-row-dir">
+                <div class="wg-dcell" v-for="(s,i) in g.slots" :key="i"
+                     :class="{ 'wg-past': s.isPast, 'wg-offshore': wgIsOffshore(s.dir) }">
+                  <svg width="13" height="13" viewBox="0 0 14 14"
+                       :style="{ transform: `rotate(${s.dir + 180}deg)` }">
+                    <polygon points="7,1 11,12 7,9 3,12" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Température -->
+              <div class="wg-drow wg-row-temp">
+                <div class="wg-dcell" v-for="(s,i) in g.slots" :key="i"
+                     :class="{ 'wg-past': s.isPast }">{{ s.temp }}°</div>
+              </div>
+
             </div>
-            <span class="slot-kt" :style="{ color: h.isPast ? 'var(--muted)' : speedColor(h.speed) }">{{ h.kt }}kt</span>
-            <span class="slot-gust">↑{{ h.gkt }}kt</span>
-            <span class="slot-dir">{{ dirLabel(h.dir) }}</span>
           </div>
         </div>
       </section>

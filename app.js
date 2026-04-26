@@ -666,6 +666,62 @@ createApp({
 
     function closeKiteModal() { kiteModalOpen.value = false; }
 
+    // ── Tableau prévisions Windguru ───────────────────────────────────────────
+    const wgForecast = computed(() => {
+      if (!hourly.value) return null;
+      const now      = Date.now();
+      const todayStr = localDateStr(new Date());
+      const KEEP     = new Set([0, 3, 6, 9, 12, 15, 18, 21]);
+      const byDate   = {};
+
+      hourly.value.time.forEach((t, i) => {
+        const h = parseInt(t.slice(11, 13));
+        if (!KEEP.has(h)) return;
+        const spd = hourly.value.wind_speed_10m[i];
+        if (spd == null) return;
+        const ds = t.slice(0, 10);
+        if (!byDate[ds]) byDate[ds] = [];
+        byDate[ds].push({
+          hh:     t.slice(11, 13),
+          kt:     toKt(spd),
+          spd,
+          gkt:    toKt(hourly.value.wind_gusts_10m[i] ?? 0),
+          dir:    Math.round(hourly.value.wind_direction_10m[i] ?? 0),
+          temp:   Math.round(hourly.value.temperature_2m[i] ?? 0),
+          isPast: new Date(t + ':00').getTime() < now,
+        });
+      });
+
+      const today = new Date(todayStr + 'T00:00:00');
+      return Object.keys(byDate).sort().slice(0, 7).map(ds => {
+        const d    = new Date(ds + 'T00:00:00');
+        const diff = Math.round((d - today) / 86400000);
+        return {
+          ds,
+          label:   diff === 0 ? 'Auj.' : diff === 1 ? 'Dem.'
+                 : d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+          isToday: diff === 0,
+          slots:   byDate[ds],
+        };
+      });
+    });
+
+    function wgWindBg(kt) {
+      if (kt <  5) return 'transparent';
+      if (kt < 10) return '#bfdbfe';
+      if (kt < 15) return '#3b82f6';
+      if (kt < 20) return '#22c55e';
+      if (kt < 25) return '#06b6d4';
+      if (kt < 30) return '#f59e0b';
+      if (kt < 35) return '#f97316';
+      return '#ef4444';
+    }
+    function wgWindFg(kt) { return kt < 10 ? 'var(--text)' : '#fff'; }
+    function wgIsOffshore(dir) {
+      const d = ((dir % 360) + 360) % 360;
+      return d > 45 && d < 170;
+    }
+
     onMounted(() => {
       fetchAll();
       loadHeroBg();
@@ -714,7 +770,7 @@ createApp({
       WEBCAMS, heroClass, heroBg, kiteDetection, lastKite, lastKiteImg, lastKiteCanvas,
       kiteModalOpen, kiteModalCanvas, drawKiteBoxes, openKiteModal, closeKiteModal,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
-      allDaysHourly, selectedDayIdx, selectedDayHourly,
+      wgForecast, wgWindBg, wgWindFg, wgIsOffshore,
       timeAgo, shareToast,
       fetchAll, dirLabel, speedColor, snapUrl, openCam, toKt, shareConditions,
     };

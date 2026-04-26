@@ -445,45 +445,115 @@ nav {
 }
 .chart-wrap { height: 180px; }
 
-/* ── DÉTAIL HORAIRE ──────────────────────────────────────────────────────── */
-.day-tabs {
-  display: flex; gap: 6px; overflow-x: auto;
-  margin-bottom: 10px; padding-bottom: 2px;
-}
-.day-tabs::-webkit-scrollbar { height: 2px; }
-.day-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.day-tab {
-  flex-shrink: 0;
-  background: var(--card); border: 1.5px solid var(--border);
-  color: var(--muted);
-  padding: 5px 15px; border-radius: 20px;
-  font-size: .7rem; font-weight: 600; letter-spacing: .03em;
-  cursor: pointer; font-family: inherit;
-  transition: all .12s;
-}
-.day-tab:active { background: var(--s1); }
-.day-tab.active {
-  background: var(--blue); border-color: var(--blue);
-  color: #fff; font-weight: 700;
+/* ── TABLEAU WINDGURU ────────────────────────────────────────────────────── */
+.wg-section {
+  padding: 18px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
 }
 
-.day-slots { display: flex; flex-direction: column; gap: 2px; }
-.day-slot {
-  display: grid;
-  grid-template-columns: 40px 1fr 42px 48px 34px;
-  align-items: center; gap: 8px;
-  padding: 7px 12px;
-  background: var(--card); border-radius: 10px;
+.wg-wrap {
+  display: flex;
   border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--card);
 }
-.day-slot.slot-past { opacity: .35; }
-.slot-hour     { font-size: .72rem; color: var(--muted); font-weight: 600; }
-.slot-bar-wrap { height: 6px; background: var(--s2); border-radius: 3px; overflow: hidden; }
-.slot-bar      { height: 100%; border-radius: 3px; transition: width .4s; }
-.slot-kt       { font-size: .9rem; font-weight: 700; text-align: right; }
-.slot-gust     { font-size: .68rem; color: var(--orange); font-weight: 600; text-align: right; }
-.slot-dir      { font-size: .65rem; color: var(--muted); font-weight: 600; text-align: right; }
+
+/* Colonne labels fixe gauche */
+.wg-label-col {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 38px;
+  background: var(--card);
+  border-right: 2px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+.wg-lrow {
+  display: flex; align-items: center; justify-content: center;
+  font-size: .55rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  flex-shrink: 0;
+}
+.wg-l-date { height: 26px; border-bottom: 1px solid var(--border); background: var(--s1); }
+.wg-l-h    { height: 28px; background: var(--s2); }
+.wg-l-wind { height: 42px; font-size: .68rem; color: var(--text); font-weight: 800; }
+.wg-l-raf  { height: 28px; border-top: 1px solid var(--border); }
+.wg-l-dir  { height: 34px; }
+.wg-l-temp { height: 28px; border-top: 1px solid var(--border); }
+
+/* Zone scrollable */
+.wg-data {
+  display: flex;
+  overflow-x: auto;
+  flex: 1; min-width: 0;
+}
+.wg-data::-webkit-scrollbar { height: 3px; }
+.wg-data::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Colonne par jour */
+.wg-day-col {
+  display: flex; flex-direction: column;
+  flex-shrink: 0;
+  border-left: 2px solid var(--border);
+}
+.wg-day-col:first-child { border-left: none; }
+
+.wg-day-hdr {
+  height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .64rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--text); background: var(--s1);
+  padding: 0 4px; white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  text-transform: capitalize;
+}
+.wg-today .wg-day-hdr { color: var(--blue); background: rgba(61,130,196,.08); }
+
+.wg-drow { display: flex; }
+
+/* Cellule de base */
+.wg-dcell {
+  width: 42px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Heures */
+.wg-row-h .wg-dcell {
+  height: 28px; font-size: .68rem; font-weight: 600;
+  color: var(--muted); background: var(--s2);
+}
+
+/* Vent — coloré, le plus grand */
+.wg-row-wind .wg-dcell {
+  height: 42px; font-size: .95rem; font-weight: 800;
+  border-radius: 4px; margin: 2px 1px; width: 40px;
+  transition: background .3s;
+}
+
+/* Rafales */
+.wg-row-raf .wg-dcell {
+  height: 28px; font-size: .7rem; font-weight: 600;
+  color: var(--muted); border-top: 1px solid var(--border);
+}
+
+/* Direction — flèche SVG */
+.wg-row-dir .wg-dcell {
+  height: 34px; color: var(--text);
+}
+.wg-offshore { color: var(--terra) !important; }
+
+/* Température */
+.wg-row-temp .wg-dcell {
+  height: 28px; font-size: .7rem; font-weight: 600;
+  color: var(--muted); border-top: 1px solid var(--border);
+}
+
+/* Passé — atténué */
+.wg-past { opacity: .28; }
 
 /* ── WEBCAMS ─────────────────────────────────────────────────────────────── */
 .webcam-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }

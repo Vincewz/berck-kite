@@ -671,12 +671,9 @@ createApp({
       if (!hourly.value) return null;
       const now      = Date.now();
       const todayStr = localDateStr(new Date());
-      const KEEP     = new Set([0, 3, 6, 9, 12, 15, 18, 21]);
       const byDate   = {};
 
       hourly.value.time.forEach((t, i) => {
-        const h = parseInt(t.slice(11, 13));
-        if (!KEEP.has(h)) return;
         const spd = hourly.value.wind_speed_10m[i];
         if (spd == null) return;
         const ds = t.slice(0, 10);

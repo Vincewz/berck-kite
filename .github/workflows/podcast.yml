@@ -38,4 +38,5 @@ jobs:
           git config user.email "bot@berck.info"
           git add podcast/today.mp3 podcast/tts/
           git diff --cached --quiet || git commit -m "🎙️ Podcast $(date +'%Y-%m-%d')"
+          git pull --rebase origin main
           git push

@@ -3,7 +3,7 @@ check_conditions.py
 Vérifie les conditions météo et écrit le résultat dans $GITHUB_OUTPUT.
 N'installe que 'requests' — appelé AVANT l'install de torch/ultralytics.
 """
-import os, sys, requests
+import os, sys, time, requests
 from datetime import datetime, timezone, timedelta
 
 BERCK_LAT, BERCK_LON = 50.4, 1.6
@@ -36,14 +36,26 @@ if not (HOUR_START <= now.hour < HOUR_END):
 
 # ── Météo ────────────────────────────────────────────────────────────────────
 print(f"Vérification conditions ({now.strftime('%H:%M')} Paris)...")
-r = requests.get(
-    "https://api.open-meteo.com/v1/forecast"
-    f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
-    "&current=wind_speed_10m,wind_direction_10m,temperature_2m"
-    "&wind_speed_unit=kmh&timezone=Europe/Paris",
-    timeout=20
-)
-r.raise_for_status()
+for attempt in range(3):
+    try:
+        r = requests.get(
+            "https://api.open-meteo.com/v1/forecast"
+            f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
+            "&current=wind_speed_10m,wind_direction_10m,temperature_2m"
+            "&wind_speed_unit=kmh&timezone=Europe/Paris",
+            timeout=20
+        )
+        r.raise_for_status()
+        break
+    except requests.exceptions.RequestException as e:
+        print(f"  Tentative {attempt+1}/3 échouée : {e}")
+        if attempt < 2:
+            time.sleep(10)
+        else:
+            print("API météo indisponible — skip")
+            set_output("conditions_ok", "false")
+            set_output("reason", "API météo indisponible")
+            sys.exit(0)
 w = r.json()["current"]
 wind_kt  = to_kt(w["wind_speed_10m"])
 wind_dir = w["wind_direction_10m"]

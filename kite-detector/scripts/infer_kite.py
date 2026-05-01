@@ -9,7 +9,7 @@ Conditions requises :
   - Température >= 3°C (raisonnable en grosse combinaison)
   - Heure Paris entre 10h et 18h
 """
-import sys, json, requests
+import sys, json, time, requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -66,14 +66,24 @@ if not (HOUR_START <= now.hour < HOUR_END):
 
 # ── 2. Fetch meteo actuelle ───────────────────────────────────────────────────
 print(f"Fetch meteo Berck ({now.strftime('%H:%M')})...")
-r = requests.get(
-    "https://api.open-meteo.com/v1/forecast"
-    f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
-    "&current=wind_speed_10m,wind_direction_10m,temperature_2m"
-    "&wind_speed_unit=kmh&timezone=Europe/Paris",
-    timeout=20
-)
-r.raise_for_status()
+for attempt in range(3):
+    try:
+        r = requests.get(
+            "https://api.open-meteo.com/v1/forecast"
+            f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
+            "&current=wind_speed_10m,wind_direction_10m,temperature_2m"
+            "&wind_speed_unit=kmh&timezone=Europe/Paris",
+            timeout=20
+        )
+        r.raise_for_status()
+        break
+    except requests.exceptions.RequestException as e:
+        print(f"  Tentative {attempt+1}/3 échouée : {e}")
+        if attempt < 2:
+            time.sleep(10)
+        else:
+            print("API météo indisponible — skip")
+            sys.exit(0)
 w = r.json()["current"]
 wind_kt  = to_kt(w["wind_speed_10m"])
 wind_dir = w["wind_direction_10m"]

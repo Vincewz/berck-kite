@@ -723,7 +723,7 @@ createApp({
       fetchAll();
       loadHeroBg();
       fetchKiteStatus();
-      refreshTimer = setInterval(fetchAll, 10 * 60_000);
+      refreshTimer = setInterval(() => { fetchAll(); loadHeroBg(); }, 10 * 60_000);
       tideTimer    = setInterval(() => { tideMs.value = Date.now(); }, 60_000);
     });
     onUnmounted(() => { clearInterval(refreshTimer); clearInterval(tideTimer); });

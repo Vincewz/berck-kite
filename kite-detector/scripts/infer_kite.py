@@ -137,7 +137,7 @@ print(f"Inference YOLO ({MODEL_PATH.name})...")
 from ultralytics import YOLO  # import ici pour ne pas bloquer si conditions KO
 
 model   = YOLO(str(MODEL_PATH))
-results = model(str(img_path), conf=0.45, iou=0.5, verbose=False)
+results = model(str(img_path), conf=0.15, iou=0.5, verbose=False)
 result  = results[0]
 
 boxes = []

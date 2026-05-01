@@ -21,6 +21,7 @@ HOUR_END     = 18
 
 BASE_DIR    = Path(__file__).parent.parent
 MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v2.pt"
+MODEL_V1    = BASE_DIR / "models" / "kitesurf_v1.pt"
 STATUS_FILE = BASE_DIR.parent / "berck-kite" / "kite_status.json"
 WEBCAM_URL  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
 
@@ -133,17 +134,37 @@ img_path.write_bytes(resp.content)
 print(f"  Image: {len(resp.content)//1024}KB")
 
 # ── 5. Inference YOLO ─────────────────────────────────────────────────────────
-print(f"Inference YOLO ({MODEL_PATH.name})...")
+print("Inference YOLO (ensemble v1+v2 conf=0.15)...")
 from ultralytics import YOLO  # import ici pour ne pas bloquer si conditions KO
 
-model   = YOLO(str(MODEL_PATH))
-results = model(str(img_path), conf=0.15, iou=0.5, verbose=False)
-result  = results[0]
+def _predict(model_path):
+    m = YOLO(str(model_path))
+    res = m(str(img_path), conf=0.15, iou=0.5, verbose=False)[0]
+    out = []
+    for box in res.boxes:
+        x1, y1, x2, y2 = box.xyxyn[0].tolist()
+        out.append((x1, y1, x2, y2, float(box.conf[0])))
+    return out
+
+def _nms(detections, iou_thr=0.5):
+    detections = sorted(detections, key=lambda b: b[4], reverse=True)
+    kept = []
+    for d in detections:
+        def _iou(a, b):
+            ix1 = max(a[0],b[0]); iy1 = max(a[1],b[1])
+            ix2 = min(a[2],b[2]); iy2 = min(a[3],b[3])
+            inter = max(0,ix2-ix1)*max(0,iy2-iy1)
+            ua = (a[2]-a[0])*(a[3]-a[1]); ub = (b[2]-b[0])*(b[3]-b[1])
+            return inter/(ua+ub-inter) if ua+ub-inter>0 else 0
+        if not any(_iou(d[:4], k[:4]) > iou_thr for k in kept):
+            kept.append(d)
+    return kept
+
+raw = _predict(MODEL_PATH) + (_predict(MODEL_V1) if MODEL_V1.exists() else [])
+merged = _nms(raw, iou_thr=0.4)
 
 boxes = []
-for box in result.boxes:
-    x1, y1, x2, y2 = box.xyxyn[0].tolist()  # normalized [0..1]
-    conf = float(box.conf[0])
+for x1, y1, x2, y2, conf in merged:
     boxes.append({
         "x1": round(x1, 4), "y1": round(y1, 4),
         "x2": round(x2, 4), "y2": round(y2, 4),

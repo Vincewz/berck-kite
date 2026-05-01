@@ -20,7 +20,7 @@ HOUR_START   = 10
 HOUR_END     = 18
 
 BASE_DIR    = Path(__file__).parent.parent
-MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v1.pt"
+MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v2.pt"
 STATUS_FILE = BASE_DIR.parent / "berck-kite" / "kite_status.json"
 WEBCAM_URL  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
 

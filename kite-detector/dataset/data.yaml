@@ -1,0 +1,6 @@
+path: C:\Users\vince\Desktop\berck info\berck-kite\kite-detector\dataset
+train: images/train
+val:   images/val
+
+nc: 1
+names: ['kitesurf']

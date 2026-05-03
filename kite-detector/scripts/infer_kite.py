@@ -20,7 +20,7 @@ HOUR_START   = 10
 HOUR_END     = 18
 
 BASE_DIR    = Path(__file__).parent.parent
-MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v2.pt"
+MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v4.pt"
 MODEL_V1    = BASE_DIR / "models" / "kitesurf_v1.pt"
 STATUS_FILE = BASE_DIR.parent / "berck-kite" / "kite_status.json"
 WEBCAM_URL  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
@@ -139,7 +139,7 @@ img_path.write_bytes(resp.content)
 print(f"  Image: {len(resp.content)//1024}KB")
 
 # ── 5. Inference YOLO ─────────────────────────────────────────────────────────
-print("Inference YOLO (ensemble v1+v2 conf=0.15)...")
+print("Inference YOLO (ensemble v1+v4 conf=0.15)...")
 from ultralytics import YOLO  # import ici pour ne pas bloquer si conditions KO
 
 def _predict(model_path):

@@ -24,6 +24,9 @@ MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v2.pt"
 MODEL_V1    = BASE_DIR / "models" / "kitesurf_v1.pt"
 STATUS_FILE = BASE_DIR.parent / "berck-kite" / "kite_status.json"
 WEBCAM_URL  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
+BERCK_API   = "https://api.berck.fr/shared-content/webcam/get-image/"
+RAW_DIR     = BASE_DIR / "dataset" / "raw"
+AUX_CAMERAS = [(4, "maritime"), (5, "mer")]
 
 paris_tz = timezone(timedelta(hours=2))
 now = datetime.now(paris_tz)
@@ -202,3 +205,20 @@ save_status({
     "image_url":      img_url,
     "last_kite":      last_kite,
 })
+
+# ── 6. Sauvegarde images Maritime + Mer pour dataset ─────────────────────────
+RAW_DIR.mkdir(parents=True, exist_ok=True)
+slug = f"{now.strftime('%Y%m%d_%H00')}_w{int(wind_kt)}kt_d{int(wind_dir)}deg"
+for cam_id, cam_name in AUX_CAMERAS:
+    fname = f"{cam_name}_{slug}.jpg"
+    fpath = RAW_DIR / fname
+    if fpath.exists():
+        continue
+    api_url = f"{BERCK_API}?id={cam_id}&format=16-9&filename=1-{cam_name}.jpg"
+    try:
+        r = requests.get(api_url, timeout=10)
+        if r.status_code == 200 and len(r.content) > 5000:
+            fpath.write_bytes(r.content)
+            print(f"  Saved {fname} ({len(r.content)//1024}KB)")
+    except Exception as e:
+        print(f"  Skip {cam_name}: {e}")

@@ -69,7 +69,9 @@ jobs:
           git config user.name  "KiteBerck Bot"
           git config user.email "bot@berck.info"
           git add berck-kite/kite_status.json berck-kite/detection_history.json
+          git add kite-detector/dataset/raw/ 2>/dev/null || true
           git diff --cached --quiet && echo "Aucun changement" && exit 0
           DATE=$(date +'%Y-%m-%d %H:%M')
-          git commit -m "Détection kite ${DATE}"
+          AUX=$(git diff --cached --name-only | grep -c "dataset/raw" || true)
+          git commit -m "Détection kite ${DATE}$([ $AUX -gt 0 ] && echo " (+${AUX} imgs maritime/mer)" || true)"
           git push

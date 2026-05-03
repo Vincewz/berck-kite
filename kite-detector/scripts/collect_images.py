@@ -118,5 +118,41 @@ for dt, kt, deg, rain in candidates:
 
 total = len(list(OUT_DIR.glob("*.jpg")))
 print(f"\nTermine: {downloaded} telecharges, {skipped} deja la, {errors} erreurs")
-print(f"Total dataset/raw: {total} images")
+print(f"Total dataset/raw (eole): {total} images")
 print(f"Objectif 1000: encore {max(0, 1000 - total)} images a collecter")
+
+# ── 4. Caméras Maritime + Mer (API Berck live, pas d'archive S3) ──────────────
+# Ces caméras ne sont pas sur S3 — on collecte l'image courante une fois/jour
+# si des conditions favorables ont été détectées aujourd'hui.
+AUX_CAMERAS = [
+    (4, "maritime"),  # Hôpital Maritime, esplanade + plage
+    (5, "mer"),       # Vue directe plage et mer
+]
+BERCK_API = "https://api.berck.fr/shared-content/webcam/get-image/"
+
+today_candidates = [(dt, kt, deg) for dt, kt, deg, _ in candidates
+                    if dt.date() == now.date()]
+
+if today_candidates:
+    # Prendre les conditions du slot le plus récent aujourd'hui
+    dt_ref, kt_ref, deg_ref = today_candidates[-1]
+    print(f"\nCollecte Maritime + Mer (conditions aujourd'hui : {len(today_candidates)} slots)...")
+    for cam_id, cam_name in AUX_CAMERAS:
+        fname = f"{cam_name}_{dt_ref.strftime('%Y%m%d_%H00')}_w{int(kt_ref)}kt_d{int(deg_ref)}deg.jpg"
+        fpath = OUT_DIR / fname
+        if fpath.exists():
+            print(f"  SKIP {fname} (deja present)")
+            continue
+        api_url = f"{BERCK_API}?id={cam_id}&format=16-9&filename=1-{cam_name}.jpg"
+        try:
+            resp = requests.get(api_url, timeout=10)
+            if resp.status_code == 200 and len(resp.content) > 5000:
+                fpath.write_bytes(resp.content)
+                print(f"  OK   {fname}  ({len(resp.content)//1024}KB)")
+            else:
+                print(f"  ERR  {cam_name} status={resp.status_code}")
+        except Exception as e:
+            print(f"  ERR  {cam_name} {e}")
+        time.sleep(0.1)
+else:
+    print("\nPas de conditions favorables aujourd'hui — skip Maritime + Mer")

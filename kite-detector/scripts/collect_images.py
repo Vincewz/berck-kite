@@ -31,7 +31,14 @@ FESTIVAL_MONTH = 4
 FESTIVAL_START = 17
 FESTIVAL_END   = 27
 
-BASE_URL = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
+S3_BASE  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer"
+BASE_URL = f"{S3_BASE}/eole"   # archive: {year}/{month}/{day}/large/{hour}-00.jpg
+# maritime : {year}/{month}/{day}/{hour}-15.jpg  (pas de /large/)
+# mer      : {year}/{month}/{day}/{hour}-30.jpg  (pas de /large/)
+AUX_S3 = {
+    "maritime": (S3_BASE + "/maritime", "15"),
+    "mer":      (S3_BASE + "/mer",      "30"),
+}
 OUT_DIR  = Path(__file__).parent.parent / "dataset" / "raw"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -121,38 +128,29 @@ print(f"\nTermine: {downloaded} telecharges, {skipped} deja la, {errors} erreurs
 print(f"Total dataset/raw (eole): {total} images")
 print(f"Objectif 1000: encore {max(0, 1000 - total)} images a collecter")
 
-# ── 4. Caméras Maritime + Mer (API Berck live, pas d'archive S3) ──────────────
-# Ces caméras ne sont pas sur S3 — on collecte l'image courante une fois/jour
-# si des conditions favorables ont été détectées aujourd'hui.
-AUX_CAMERAS = [
-    (4, "maritime"),  # Hôpital Maritime, esplanade + plage
-    (5, "mer"),       # Vue directe plage et mer
-]
-BERCK_API = "https://api.berck.fr/shared-content/webcam/get-image/"
-
-today_candidates = [(dt, kt, deg) for dt, kt, deg, _ in candidates
-                    if dt.date() == now.date()]
-
-if today_candidates:
-    # Prendre les conditions du slot le plus récent aujourd'hui
-    dt_ref, kt_ref, deg_ref = today_candidates[-1]
-    print(f"\nCollecte Maritime + Mer (conditions aujourd'hui : {len(today_candidates)} slots)...")
-    for cam_id, cam_name in AUX_CAMERAS:
-        fname = f"{cam_name}_{dt_ref.strftime('%Y%m%d_%H00')}_w{int(kt_ref)}kt_d{int(deg_ref)}deg.jpg"
+# ── 4. Caméras Maritime + Mer (archive S3, format différent d'eole) ───────────
+# maritime : {year}/{month}/{day}/{hour}-15.jpg  (à XX:15, pas de /large/)
+# mer      : {year}/{month}/{day}/{hour}-30.jpg  (à XX:30, pas de /large/)
+dl2 = sk2 = er2 = 0
+for cam_name, (cam_base, minute) in AUX_S3.items():
+    for dt, kt, deg, _ in candidates:
+        fname = f"{cam_name}_{dt.strftime('%Y%m%d_%H00')}_w{int(kt)}kt_d{int(deg)}deg.jpg"
         fpath = OUT_DIR / fname
         if fpath.exists():
-            print(f"  SKIP {fname} (deja present)")
+            sk2 += 1
             continue
-        api_url = f"{BERCK_API}?id={cam_id}&format=16-9&filename=1-{cam_name}.jpg"
+        url = f"{cam_base}/{dt.year}/{dt.month:02d}/{dt.day:02d}/{dt.hour:02d}-{minute}.jpg"
         try:
-            resp = requests.get(api_url, timeout=10)
+            resp = requests.get(url, timeout=10)
             if resp.status_code == 200 and len(resp.content) > 5000:
                 fpath.write_bytes(resp.content)
-                print(f"  OK   {fname}  ({len(resp.content)//1024}KB)")
+                dl2 += 1
+                print(f"  OK  {fname}  ({len(resp.content)//1024}KB)")
             else:
-                print(f"  ERR  {cam_name} status={resp.status_code}")
-        except Exception as e:
-            print(f"  ERR  {cam_name} {e}")
-        time.sleep(0.1)
-else:
-    print("\nPas de conditions favorables aujourd'hui — skip Maritime + Mer")
+                er2 += 1
+        except Exception:
+            er2 += 1
+        time.sleep(0.05)
+
+total2 = len(list(OUT_DIR.glob("maritime_*.jpg"))) + len(list(OUT_DIR.glob("mer_*.jpg")))
+print(f"\nMaritime+Mer: {dl2} telecharges, {sk2} deja la, {er2} manquants (total: {total2})")

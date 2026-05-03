@@ -24,9 +24,11 @@ MODEL_PATH  = BASE_DIR / "models" / "kitesurf_v2.pt"
 MODEL_V1    = BASE_DIR / "models" / "kitesurf_v1.pt"
 STATUS_FILE = BASE_DIR.parent / "berck-kite" / "kite_status.json"
 WEBCAM_URL  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole"
-BERCK_API   = "https://api.berck.fr/shared-content/webcam/get-image/"
+S3_BASE     = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer"
 RAW_DIR     = BASE_DIR / "dataset" / "raw"
-AUX_CAMERAS = [(4, "maritime"), (5, "mer")]
+# maritime: {year}/{month}/{day}/{hour}-15.jpg  (no /large/)
+# mer:      {year}/{month}/{day}/{hour}-30.jpg  (no /large/)
+AUX_CAMERAS = [("maritime", "15"), ("mer", "30")]
 
 paris_tz = timezone(timedelta(hours=2))
 now = datetime.now(paris_tz)
@@ -209,14 +211,14 @@ save_status({
 # ── 6. Sauvegarde images Maritime + Mer pour dataset ─────────────────────────
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 slug = f"{now.strftime('%Y%m%d_%H00')}_w{int(wind_kt)}kt_d{int(wind_dir)}deg"
-for cam_id, cam_name in AUX_CAMERAS:
+for cam_name, minute in AUX_CAMERAS:
     fname = f"{cam_name}_{slug}.jpg"
     fpath = RAW_DIR / fname
     if fpath.exists():
         continue
-    api_url = f"{BERCK_API}?id={cam_id}&format=16-9&filename=1-{cam_name}.jpg"
+    url = f"{S3_BASE}/{cam_name}/{now.year}/{now.month:02d}/{now.day:02d}/{now.hour:02d}-{minute}.jpg"
     try:
-        r = requests.get(api_url, timeout=10)
+        r = requests.get(url, timeout=10)
         if r.status_code == 200 and len(r.content) > 5000:
             fpath.write_bytes(r.content)
             print(f"  Saved {fname} ({len(r.content)//1024}KB)")

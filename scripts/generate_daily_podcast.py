@@ -267,9 +267,10 @@ def generate_script(data: dict, date_str: str, kite_yesterday: dict | None = Non
     offshore_note = f"\n⚠ ALERTE OFFSHORE : {n['offshore']}" if n['offshore'] else ""
 
     # Kites détectés hier (mentionner seulement si détection confiante)
-    kite_note = ""
     if kite_yesterday:
         kite_note = "\nKITES HIER : quelques kitesurfs à l'eau hier.\n"
+    else:
+        kite_note = "\nKITES HIER : aucune détection confiante — ne pas mentionner les kites dans le bulletin.\n"
 
     user_msg = f"""Bulletin du {date_str} — généré à 6h00
 

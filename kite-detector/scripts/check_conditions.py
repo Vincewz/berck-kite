@@ -7,7 +7,7 @@ import os, sys, time, requests
 from datetime import datetime, timezone, timedelta
 
 BERCK_LAT, BERCK_LON = 50.4, 1.6
-MIN_WIND_KT = 15
+MIN_WIND_KT = 13
 MIN_TEMP_C  = 3
 HOUR_START  = 10
 HOUR_END    = 18

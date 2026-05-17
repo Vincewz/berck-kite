@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 BERCK_LAT, BERCK_LON = 50.4, 1.6
-MIN_WIND_KT  = 15
+MIN_WIND_KT  = 13
 MIN_TEMP_C   = 3
 HOUR_START   = 10
 HOUR_END     = 18
@@ -131,8 +131,19 @@ if resp.status_code != 200 or len(resp.content) < 5000:
     print(f"Image indispo, essai: {img_url}")
     resp = requests.get(img_url, timeout=15)
     if resp.status_code != 200 or len(resp.content) < 5000:
-        print("Image toujours indisponible — abort")
-        sys.exit(1)
+        print("Image toujours indisponible — skip")
+        save_status({
+            "timestamp":      now.isoformat(),
+            "conditions_ok":  False,
+            "reason":         "webcam indisponible",
+            "wind_kt":        round(wind_kt, 1),
+            "wind_dir":       round(wind_dir),
+            "temp_c":         temp_c,
+            "kites_detected": 0,
+            "boxes":          [],
+            "last_kite":      last_kite,
+        })
+        sys.exit(0)
 
 img_path = Path("/tmp/webcam_kite.jpg")
 img_path.write_bytes(resp.content)

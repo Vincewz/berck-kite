@@ -1,59 +1,31 @@
 {
-  "timestamp": "2026-05-31T17:42:58.645499+02:00",
+  "timestamp": "2026-06-02T14:16:58.375720+02:00",
   "conditions_ok": true,
-  "wind_kt": 14.6,
+  "wind_kt": 17.4,
   "wind_dir": 253,
-  "temp_c": 16.9,
-  "kites_detected": 3,
+  "temp_c": 17.0,
+  "kites_detected": 1,
   "boxes": [
     {
-      "x1": 0.7841,
-      "y1": 0.4134,
-      "x2": 0.8006,
-      "y2": 0.442,
-      "conf": 0.425
-    },
-    {
-      "x1": 0.7522,
-      "y1": 0.44,
-      "x2": 0.7665,
-      "y2": 0.4644,
-      "conf": 0.409
-    },
-    {
-      "x1": 0.8333,
-      "y1": 0.4388,
-      "x2": 0.8483,
-      "y2": 0.4642,
-      "conf": 0.195
+      "x1": 0.7114,
+      "y1": 0.4441,
+      "x2": 0.7195,
+      "y2": 0.4597,
+      "conf": 0.183
     }
   ],
-  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/05/31/large/17-00.jpg",
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/02/large/14-00.jpg",
   "last_kite": {
-    "timestamp": "2026-05-31T17:42:58.645499+02:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/05/31/large/17-00.jpg",
-    "kites_detected": 3,
+    "timestamp": "2026-06-02T14:16:58.375720+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/02/large/14-00.jpg",
+    "kites_detected": 1,
     "boxes": [
       {
-        "x1": 0.7841,
-        "y1": 0.4134,
-        "x2": 0.8006,
-        "y2": 0.442,
-        "conf": 0.425
-      },
-      {
-        "x1": 0.7522,
-        "y1": 0.44,
-        "x2": 0.7665,
-        "y2": 0.4644,
-        "conf": 0.409
-      },
-      {
-        "x1": 0.8333,
-        "y1": 0.4388,
-        "x2": 0.8483,
-        "y2": 0.4642,
-        "conf": 0.195
+        "x1": 0.7114,
+        "y1": 0.4441,
+        "x2": 0.7195,
+        "y2": 0.4597,
+        "conf": 0.183
       }
     ]
   }

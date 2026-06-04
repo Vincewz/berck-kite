@@ -1,92 +1,95 @@
 {
-  "date": "2026-06-03",
-  "generated_at": "2026-06-03T11:23:31.906897+02:00",
+  "date": "2026-06-04",
+  "generated_at": "2026-06-04T10:45:01.074359+02:00",
   "favorable_hours": [
     "10:00",
     "11:00",
     "12:00",
     "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
     "17:00"
   ],
   "kite_likely": true,
   "windows": [
     {
       "start": "10:00",
-      "end": "13:00",
-      "hours": 4
+      "end": "17:00",
+      "hours": 8
     }
   ],
   "peak": {
-    "hour": "10:00",
-    "kt": 15.1,
-    "gkt": 25.6,
-    "dir": 238,
-    "temp": 15.9,
+    "hour": "15:00",
+    "kt": 20.4,
+    "gkt": 38.1,
+    "dir": 242,
+    "temp": 16.4,
     "favorable": true
   },
   "slots": [
     {
       "hour": "10:00",
-      "kt": 15.1,
-      "gkt": 25.6,
-      "dir": 238,
-      "temp": 15.9,
+      "kt": 19.7,
+      "gkt": 35.7,
+      "dir": 235,
+      "temp": 15.0,
       "favorable": true
     },
     {
       "hour": "11:00",
-      "kt": 14.4,
-      "gkt": 26.5,
-      "dir": 224,
-      "temp": 16.1,
+      "kt": 20.0,
+      "gkt": 37.5,
+      "dir": 236,
+      "temp": 14.9,
       "favorable": true
     },
     {
       "hour": "12:00",
-      "kt": 14.9,
-      "gkt": 26.0,
-      "dir": 221,
-      "temp": 16.5,
+      "kt": 20.1,
+      "gkt": 39.1,
+      "dir": 235,
+      "temp": 15.4,
       "favorable": true
     },
     {
       "hour": "13:00",
-      "kt": 14.5,
-      "gkt": 26.5,
-      "dir": 206,
-      "temp": 17.9,
+      "kt": 20.2,
+      "gkt": 37.5,
+      "dir": 237,
+      "temp": 15.6,
       "favorable": true
     },
     {
       "hour": "14:00",
-      "kt": 12.7,
-      "gkt": 25.1,
-      "dir": 207,
-      "temp": 17.5,
-      "favorable": false
+      "kt": 19.7,
+      "gkt": 37.7,
+      "dir": 239,
+      "temp": 16.0,
+      "favorable": true
     },
     {
       "hour": "15:00",
-      "kt": 11.1,
-      "gkt": 22.0,
-      "dir": 190,
-      "temp": 16.7,
-      "favorable": false
+      "kt": 20.4,
+      "gkt": 38.1,
+      "dir": 242,
+      "temp": 16.4,
+      "favorable": true
     },
     {
       "hour": "16:00",
-      "kt": 12.6,
-      "gkt": 22.6,
-      "dir": 200,
-      "temp": 17.1,
-      "favorable": false
+      "kt": 20.2,
+      "gkt": 38.9,
+      "dir": 246,
+      "temp": 16.6,
+      "favorable": true
     },
     {
       "hour": "17:00",
-      "kt": 14.2,
-      "gkt": 24.5,
-      "dir": 203,
-      "temp": 18.2,
+      "kt": 19.4,
+      "gkt": 37.3,
+      "dir": 247,
+      "temp": 16.3,
       "favorable": true
     }
   ],

@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-05T13:38:57.906532+02:00",
+  "timestamp": "2026-06-06T14:46:45.001115+02:00",
   "conditions_ok": false,
   "reason": "webcam indisponible",
-  "wind_kt": 13.0,
-  "wind_dir": 250,
-  "temp_c": 16.0,
+  "wind_kt": 15.2,
+  "wind_dir": 232,
+  "temp_c": 16.4,
   "kites_detected": 0,
   "boxes": [],
   "last_kite": {

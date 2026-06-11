@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-11T16:13:42.699711+02:00",
+  "timestamp": "2026-06-11T16:57:30.804791+02:00",
   "conditions_ok": true,
-  "wind_kt": 15.1,
-  "wind_dir": 225,
-  "temp_c": 13.3,
+  "wind_kt": 15.0,
+  "wind_dir": 217,
+  "temp_c": 13.6,
   "kites_detected": 0,
   "boxes": [],
   "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/11/large/16-00.jpg",

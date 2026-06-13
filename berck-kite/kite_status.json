@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-06-13T14:05:17.734273+02:00",
+  "timestamp": "2026-06-13T14:59:55.568629+02:00",
   "conditions_ok": true,
-  "wind_kt": 14.6,
-  "wind_dir": 260,
-  "temp_c": 16.9,
+  "wind_kt": 14.4,
+  "wind_dir": 261,
+  "temp_c": 16.8,
   "kites_detected": 1,
   "boxes": [
     {
@@ -16,7 +16,7 @@
   ],
   "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/13/large/14-00.jpg",
   "last_kite": {
-    "timestamp": "2026-06-13T14:05:17.734273+02:00",
+    "timestamp": "2026-06-13T14:59:55.568629+02:00",
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/13/large/14-00.jpg",
     "kites_detected": 1,
     "boxes": [

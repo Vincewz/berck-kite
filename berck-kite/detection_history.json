@@ -196,5 +196,14 @@
     "kites_detected": 1,
     "max_conf": 0.431,
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/06/13/large/14-00.jpg"
+  },
+  {
+    "timestamp": "2026-07-04T16:05:20.369656+02:00",
+    "wind_kt": 13.3,
+    "wind_dir": 251,
+    "temp_c": 19.4,
+    "kites_detected": 1,
+    "max_conf": 0.807,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/04/large/16-00.jpg"
   }
 ]

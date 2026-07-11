@@ -6,8 +6,9 @@ Called by GitHub Actions.
 import json
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -15,8 +16,7 @@ BERCK_LAT, BERCK_LON = 50.4, 1.6
 MIN_WIND_KT = 8
 MAX_RAIN_MM = 0.3
 MIN_TEMP_C = 3
-HOUR_START = 10
-HOUR_END = 18
+SUNSET_GRACE_MIN = 30
 FESTIVAL_MONTH = 4
 FESTIVAL_START = 17
 FESTIVAL_END = 27
@@ -37,7 +37,7 @@ CAMERAS = [
     {"name": "mer", "label": "La Mer", "large": False, "minutes": ["00", "15", "30", "45"]},
 ]
 
-paris_tz = timezone(timedelta(hours=2))
+paris_tz = ZoneInfo("Europe/Paris")
 now = datetime.now(paris_tz)
 
 
@@ -51,6 +51,15 @@ def has_east_component(deg):
 
 def is_festival(dt):
     return dt.month == FESTIVAL_MONTH and FESTIVAL_START <= dt.day <= FESTIVAL_END
+
+
+def parse_local_dt(value):
+    dt = datetime.fromisoformat(value)
+    return dt.replace(tzinfo=paris_tz) if dt.tzinfo is None else dt.astimezone(paris_tz)
+
+
+def is_daylight_window(dt, sunrise, sunset):
+    return sunrise <= dt <= sunset + timedelta(minutes=SUNSET_GRACE_MIN)
 
 
 def load_previous_status():
@@ -102,6 +111,7 @@ def status_base(previous_status, conditions_ok, **extra):
     last_kites = previous_status.get("last_kites") or []
     if not last_kites and previous_status.get("last_kite"):
         last_kites = [previous_status["last_kite"]]
+    last_kites = latest_valid_kites(last_kites)
     data = {
         "timestamp": now.isoformat(),
         "conditions_ok": conditions_ok,
@@ -112,6 +122,26 @@ def status_base(previous_status, conditions_ok, **extra):
     }
     data.update(extra)
     return data
+
+
+def latest_valid_kites(*groups, limit=3):
+    items = []
+    seen = set()
+    for group in groups:
+        if not group:
+            continue
+        if isinstance(group, dict):
+            group = [group]
+        for item in group:
+            if not item or not item.get("timestamp") or not item.get("image_url") or not item.get("boxes"):
+                continue
+            key = (item.get("timestamp"), item.get("camera"), item.get("image_url"))
+            if key in seen:
+                continue
+            seen.add(key)
+            items.append(item)
+    items.sort(key=lambda item: item.get("timestamp") or "", reverse=True)
+    return items[:limit]
 
 
 def candidate_urls(camera, dt):
@@ -195,10 +225,6 @@ def detect_boxes(img_path, models):
 
 previous_status = load_previous_status()
 
-if not (HOUR_START <= now.hour < HOUR_END):
-    print(f"Hors plage horaire ({now.hour}h Paris) - skip")
-    sys.exit(0)
-
 if is_festival(now):
     print("Festival de cerfs-volants de Berck - skip")
     save_status(status_base(previous_status, False, reason="festival de cerfs-volants"))
@@ -211,6 +237,7 @@ for attempt in range(3):
             "https://api.open-meteo.com/v1/forecast"
             f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
             "&current=wind_speed_10m,wind_direction_10m,temperature_2m,precipitation"
+            "&daily=sunrise,sunset&forecast_days=1"
             "&wind_speed_unit=kmh&timezone=Europe/Paris",
             timeout=20,
         )
@@ -224,7 +251,18 @@ for attempt in range(3):
             print("API meteo indisponible - skip")
             sys.exit(0)
 
-w = r.json()["current"]
+payload = r.json()
+sunrise = parse_local_dt(payload["daily"]["sunrise"][0])
+sunset = parse_local_dt(payload["daily"]["sunset"][0])
+sunset_limit = sunset + timedelta(minutes=SUNSET_GRACE_MIN)
+
+if not is_daylight_window(now, sunrise, sunset):
+    reason = f"hors lumiere ({sunrise.strftime('%H:%M')}-{sunset_limit.strftime('%H:%M')})"
+    print(f"{reason} - skip")
+    save_status(status_base(previous_status, False, reason=reason))
+    sys.exit(0)
+
+w = payload["current"]
 wind_kt = to_kt(w["wind_speed_10m"])
 wind_dir = w["wind_direction_10m"]
 temp_c = w["temperature_2m"]
@@ -294,17 +332,20 @@ for camera in CAMERAS:
         "kites_detected": len(boxes),
         "max_conf": round(max(box["conf"] for box in boxes), 3),
         "image_url": img_url,
+        "boxes": boxes,
     })
 
-last_kites = current_kites or previous_status.get("last_kites") or []
-if not last_kites and previous_status.get("last_kite"):
-    last_kites = [previous_status["last_kite"]]
+last_kites = latest_valid_kites(
+    current_kites,
+    previous_status.get("last_kites"),
+    previous_status.get("last_kite"),
+)
 
 last_kite = None
 if current_kites:
     last_kite = max(current_kites, key=lambda entry: max(box["conf"] for box in entry["boxes"]))
 else:
-    last_kite = previous_status.get("last_kite")
+    last_kite = last_kites[0] if last_kites else previous_status.get("last_kite")
 
 status_boxes = last_kite.get("boxes", []) if last_kite else []
 save_status({

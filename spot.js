@@ -87,8 +87,20 @@ createApp({
     });
 
     function normalizeStatusKites(data) {
-      if (Array.isArray(data?.last_kites) && data.last_kites.length) return data.last_kites;
-      return data?.last_kite ? [data.last_kite] : [];
+      const entries = [];
+      if (Array.isArray(data?.last_kites)) entries.push(...data.last_kites);
+      if (data?.last_kite) entries.push(data.last_kite);
+      const seen = new Set();
+      return entries
+        .filter(kite => kite?.timestamp && kite?.image_url && Array.isArray(kite.boxes) && kite.boxes.length)
+        .filter(kite => {
+          const key = `${kite.timestamp}|${kite.camera || ''}|${kite.image_url}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)))
+        .slice(0, 3);
     }
 
     async function fetchJson(url, fallback) {

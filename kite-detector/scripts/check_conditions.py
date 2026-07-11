@@ -6,7 +6,8 @@ N'installe que requests, avant l'installation torch/ultralytics.
 import os
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -14,13 +15,12 @@ BERCK_LAT, BERCK_LON = 50.4, 1.6
 MIN_WIND_KT = 8
 MAX_RAIN_MM = 0.3
 MIN_TEMP_C = 3
-HOUR_START = 10
-HOUR_END = 18
+SUNSET_GRACE_MIN = 30
 FESTIVAL_MONTH = 4
 FESTIVAL_START = 17
 FESTIVAL_END = 27
 
-paris_tz = timezone(timedelta(hours=2))
+paris_tz = ZoneInfo("Europe/Paris")
 now = datetime.now(paris_tz)
 
 
@@ -36,6 +36,15 @@ def is_festival(dt):
     return dt.month == FESTIVAL_MONTH and FESTIVAL_START <= dt.day <= FESTIVAL_END
 
 
+def parse_local_dt(value):
+    dt = datetime.fromisoformat(value)
+    return dt.replace(tzinfo=paris_tz) if dt.tzinfo is None else dt.astimezone(paris_tz)
+
+
+def is_daylight_window(dt, sunrise, sunset):
+    return sunrise <= dt <= sunset + timedelta(minutes=SUNSET_GRACE_MIN)
+
+
 def set_output(key, value):
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
@@ -43,12 +52,6 @@ def set_output(key, value):
             handle.write(f"{key}={value}\n")
     print(f"  output: {key}={value}")
 
-
-if not (HOUR_START <= now.hour < HOUR_END):
-    print(f"Hors plage horaire ({now.hour}h Paris) - pas de detection")
-    set_output("conditions_ok", "false")
-    set_output("reason", f"hors plage horaire ({now.hour}h)")
-    sys.exit(0)
 
 if is_festival(now):
     print("Festival de cerfs-volants de Berck - pas de detection")
@@ -63,6 +66,7 @@ for attempt in range(3):
             "https://api.open-meteo.com/v1/forecast"
             f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
             "&current=wind_speed_10m,wind_direction_10m,temperature_2m,precipitation"
+            "&daily=sunrise,sunset&forecast_days=1"
             "&wind_speed_unit=kmh&timezone=Europe/Paris",
             timeout=20,
         )
@@ -78,7 +82,19 @@ for attempt in range(3):
             set_output("reason", "API meteo indisponible")
             sys.exit(0)
 
-weather = response.json()["current"]
+payload = response.json()
+sunrise = parse_local_dt(payload["daily"]["sunrise"][0])
+sunset = parse_local_dt(payload["daily"]["sunset"][0])
+sunset_limit = sunset + timedelta(minutes=SUNSET_GRACE_MIN)
+
+if not is_daylight_window(now, sunrise, sunset):
+    reason = f"hors lumiere ({sunrise.strftime('%H:%M')}-{sunset_limit.strftime('%H:%M')})"
+    print(f"{reason} - pas de detection")
+    set_output("conditions_ok", "false")
+    set_output("reason", reason)
+    sys.exit(0)
+
+weather = payload["current"]
 wind_kt = to_kt(weather["wind_speed_10m"])
 wind_dir = weather["wind_direction_10m"]
 temp_c = weather["temperature_2m"]

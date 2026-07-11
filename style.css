@@ -41,16 +41,40 @@ nav {
 .nav-logo { font-size: 1rem; font-weight: 600; flex: 1; color: var(--text); letter-spacing: -.01em; }
 .nav-logo b { color: var(--blue); font-weight: 700; }
 .nav-link {
-  color: var(--text);
+  position: relative;
+  color: var(--blue);
   text-decoration: none;
   font-size: .78rem;
   font-weight: 800;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(61,130,196,.28);
   border-radius: 8px;
-  padding: 7px 10px;
+  padding: 7px 11px 7px 22px;
   white-space: nowrap;
+  background: rgba(61,130,196,.08);
+  box-shadow: 0 1px 0 rgba(255,255,255,.75) inset;
+  transition: background .15s, border-color .15s, transform .15s;
 }
-.nav-link:active { background: var(--s1); }
+.nav-link::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(58,170,110,.16);
+  transform: translateY(-50%);
+}
+.nav-link:hover {
+  background: rgba(61,130,196,.13);
+  border-color: rgba(61,130,196,.42);
+  transform: translateY(-1px);
+}
+.nav-link:active {
+  background: rgba(61,130,196,.16);
+  transform: translateY(0);
+}
 .nav-update { font-size: .7rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }

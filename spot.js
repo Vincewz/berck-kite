@@ -276,11 +276,23 @@ createApp({
       return kite?.camera_label || cameraLabel(kite?.camera || cameraFromUrl(kite?.image_url));
     }
 
-    function boxStyle(box) {
+    function boxesOverlap(a, b, margin = 0) {
+      return !(a.x2 + margin < b.x1 || b.x2 + margin < a.x1 || a.y2 + margin < b.y1 || b.y2 + margin < a.y1);
+    }
+
+    function isBoxCrowded(box, boxes = []) {
+      return boxes.some(other => other !== box && boxesOverlap(box, other, 0.025));
+    }
+
+    function boxStyle(box, boxes = [], index = 0) {
       const width = Math.max(0.001, box.x2 - box.x1);
       const height = Math.max(0.001, box.y2 - box.y1);
-      const padX = Math.max(0.018, width * 0.55);
-      const padY = Math.max(0.032, height * 0.55);
+      const crowded = isBoxCrowded(box, boxes);
+      const minPadX = crowded ? 0.01 : 0.018;
+      const minPadY = crowded ? 0.018 : 0.032;
+      const ratio = crowded ? 0.22 : 0.55;
+      const padX = Math.max(minPadX, width * ratio);
+      const padY = Math.max(minPadY, height * ratio);
       const x1 = Math.max(0, box.x1 - padX);
       const y1 = Math.max(0, box.y1 - padY);
       const x2 = Math.min(1, box.x2 + padX);
@@ -290,6 +302,11 @@ createApp({
         top: `${y1 * 100}%`,
         width: `${(x2 - x1) * 100}%`,
         height: `${(y2 - y1) * 100}%`,
+        '--label-offset': `${8 + (index % 3) * 14}px`,
+        '--label-side': index % 2 ? 'calc(100% + var(--label-offset))' : 'auto',
+        '--label-bottom': index % 2 ? 'auto' : 'calc(100% + var(--label-offset))',
+        '--highlight-opacity': crowded ? 0.72 : 1,
+        '--corner-size': crowded ? '12px' : '18px',
       };
     }
 

@@ -720,6 +720,7 @@ nav {
     0 0 0 1px rgba(0,0,0,.72),
     0 0 18px rgba(34,197,94,.72),
     inset 0 0 0 1px rgba(255,255,255,.24);
+  opacity: var(--highlight-opacity, 1);
   pointer-events: none;
 }
 .kite-box::before {
@@ -736,12 +737,22 @@ nav {
     linear-gradient(#bbf7d0, #bbf7d0) left bottom / 3px 18px no-repeat,
     linear-gradient(#bbf7d0, #bbf7d0) right bottom / 18px 3px no-repeat,
     linear-gradient(#bbf7d0, #bbf7d0) right bottom / 3px 18px no-repeat;
+  background-size:
+    var(--corner-size, 18px) 3px,
+    3px var(--corner-size, 18px),
+    var(--corner-size, 18px) 3px,
+    3px var(--corner-size, 18px),
+    var(--corner-size, 18px) 3px,
+    3px var(--corner-size, 18px),
+    var(--corner-size, 18px) 3px,
+    3px var(--corner-size, 18px);
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.8));
 }
 .kite-box-label {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 8px);
+  top: var(--label-side, auto);
+  bottom: var(--label-bottom, calc(100% + 8px));
   transform: translateX(-50%);
   background: rgba(3,18,10,.88);
   color: #bbf7d0;

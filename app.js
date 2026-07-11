@@ -88,13 +88,23 @@ function preloadImage(url, timeoutMs = 4500) {
   });
 }
 
-function expandedKiteRect(box, width, height, padRatio = 0.45) {
+function normalizedBoxesOverlap(a, b, margin = 0) {
+  return !(a.x2 + margin < b.x1 || b.x2 + margin < a.x1 || a.y2 + margin < b.y1 || b.y2 + margin < a.y1);
+}
+
+function isKiteBoxCrowded(box, boxes = []) {
+  return boxes.some(other => other !== box && normalizedBoxesOverlap(box, other, 0.025));
+}
+
+function expandedKiteRect(box, width, height, crowded = false) {
   const x = box.x1 * width;
   const y = box.y1 * height;
   const w = Math.max(1, (box.x2 - box.x1) * width);
   const h = Math.max(1, (box.y2 - box.y1) * height);
-  const padX = Math.max(18, w * padRatio);
-  const padY = Math.max(18, h * padRatio);
+  const padRatio = crowded ? 0.22 : 0.45;
+  const minPad = crowded ? 10 : 18;
+  const padX = Math.max(minPad, w * padRatio);
+  const padY = Math.max(minPad, h * padRatio);
   const x1 = Math.max(0, x - padX);
   const y1 = Math.max(0, y - padY);
   const x2 = Math.min(width, x + w + padX);
@@ -102,9 +112,9 @@ function expandedKiteRect(box, width, height, padRatio = 0.45) {
   return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
 }
 
-function drawKiteHighlight(ctx, x, y, w, h, conf, scale = 1) {
+function drawKiteHighlight(ctx, x, y, w, h, conf, scale = 1, labelIndex = 0, crowded = false) {
   const line = 2.4 / scale;
-  const corner = Math.max(10 / scale, Math.min(w, h) * 0.32);
+  const corner = Math.max((crowded ? 7 : 10) / scale, Math.min(w, h) * (crowded ? 0.24 : 0.32));
   ctx.save();
   ctx.lineWidth = line;
   ctx.strokeStyle = '#bbf7d0';
@@ -130,7 +140,11 @@ function drawKiteHighlight(ctx, x, y, w, h, conf, scale = 1) {
     const labelW = tw + 10 / scale;
     const labelH = 18 / scale;
     const labelX = x + w / 2 - labelW / 2;
-    const labelY = y > labelH + 8 / scale ? y - labelH - 7 / scale : y + h + 7 / scale;
+    const labelGap = (7 + (labelIndex % 3) * 12) / scale;
+    const preferBelow = labelIndex % 2 === 1;
+    const labelY = preferBelow || y <= labelH + labelGap
+      ? y + h + labelGap
+      : y - labelH - labelGap;
     ctx.fillStyle = 'rgba(3,18,10,0.88)';
     ctx.strokeStyle = 'rgba(187,247,208,0.75)';
     ctx.lineWidth = 1 / scale;
@@ -719,10 +733,11 @@ createApp({
       ctx.translate(tx, ty);
       ctx.scale(scale, scale);
       ctx.drawImage(img, 0, 0, cw, ch);
-      for (const b of boxes) {
-        const rect = expandedKiteRect(b, cw, ch);
-        drawKiteHighlight(ctx, rect.x, rect.y, rect.w, rect.h, b.conf, scale);
-      }
+      boxes.forEach((b, i) => {
+        const crowded = isKiteBoxCrowded(b, boxes);
+        const rect = expandedKiteRect(b, cw, ch, crowded);
+        drawKiteHighlight(ctx, rect.x, rect.y, rect.w, rect.h, b.conf, scale, i, crowded);
+      });
       ctx.restore();
     }
 
@@ -743,10 +758,11 @@ createApp({
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, ox, oy, sw, sh);
       if (lastKite.value?.boxes?.length) {
-        for (const b of lastKite.value.boxes) {
-          const rect = expandedKiteRect(b, sw, sh);
-          drawKiteHighlight(ctx, ox + rect.x, oy + rect.y, rect.w, rect.h, b.conf);
-        }
+        lastKite.value.boxes.forEach((b, i) => {
+          const crowded = isKiteBoxCrowded(b, lastKite.value.boxes);
+          const rect = expandedKiteRect(b, sw, sh, crowded);
+          drawKiteHighlight(ctx, ox + rect.x, oy + rect.y, rect.w, rect.h, b.conf, 1, i, crowded);
+        });
       }
     }
 

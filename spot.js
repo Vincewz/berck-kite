@@ -277,11 +277,19 @@ createApp({
     }
 
     function boxStyle(box) {
+      const width = Math.max(0.001, box.x2 - box.x1);
+      const height = Math.max(0.001, box.y2 - box.y1);
+      const padX = Math.max(0.018, width * 0.55);
+      const padY = Math.max(0.032, height * 0.55);
+      const x1 = Math.max(0, box.x1 - padX);
+      const y1 = Math.max(0, box.y1 - padY);
+      const x2 = Math.min(1, box.x2 + padX);
+      const y2 = Math.min(1, box.y2 + padY);
       return {
-        left: `${box.x1 * 100}%`,
-        top: `${box.y1 * 100}%`,
-        width: `${(box.x2 - box.x1) * 100}%`,
-        height: `${(box.y2 - box.y1) * 100}%`,
+        left: `${x1 * 100}%`,
+        top: `${y1 * 100}%`,
+        width: `${(x2 - x1) * 100}%`,
+        height: `${(y2 - y1) * 100}%`,
       };
     }
 

@@ -712,22 +712,47 @@ nav {
 }
 .kite-box {
   position: absolute;
-  border: 2px solid #22c55e;
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 0 10px rgba(34,197,94,.5);
+  border: 0;
+  border-radius: 3px;
+  outline: 2px solid rgba(34,197,94,.98);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.72),
+    0 0 18px rgba(34,197,94,.72),
+    inset 0 0 0 1px rgba(255,255,255,.24);
   pointer-events: none;
+}
+.kite-box::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 7px;
+  background:
+    linear-gradient(#bbf7d0, #bbf7d0) left top / 18px 3px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) left top / 3px 18px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) right top / 18px 3px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) right top / 3px 18px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) left bottom / 18px 3px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) left bottom / 3px 18px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) right bottom / 18px 3px no-repeat,
+    linear-gradient(#bbf7d0, #bbf7d0) right bottom / 3px 18px no-repeat;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.8));
 }
 .kite-box-label {
   position: absolute;
-  left: -2px;
-  top: -20px;
-  background: #22c55e;
-  color: #03120a;
-  font-size: .68rem;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: rgba(3,18,10,.88);
+  color: #bbf7d0;
+  border: 1px solid rgba(187,247,208,.75);
+  font-size: .66rem;
   font-weight: 800;
   line-height: 1;
   padding: 4px 5px;
-  border-radius: 3px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.45);
+  white-space: nowrap;
 }
 .kite-expand-hint {
   position: absolute;
@@ -766,7 +791,8 @@ nav {
   display: block;
 }
 .kite-box-modal {
-  border-width: 3px;
+  outline-width: 3px;
+  outline-offset: 5px;
 }
 .kite-modal-close {
   position: absolute;

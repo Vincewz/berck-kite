@@ -88,6 +88,62 @@ function preloadImage(url, timeoutMs = 4500) {
   });
 }
 
+function expandedKiteRect(box, width, height, padRatio = 0.45) {
+  const x = box.x1 * width;
+  const y = box.y1 * height;
+  const w = Math.max(1, (box.x2 - box.x1) * width);
+  const h = Math.max(1, (box.y2 - box.y1) * height);
+  const padX = Math.max(18, w * padRatio);
+  const padY = Math.max(18, h * padRatio);
+  const x1 = Math.max(0, x - padX);
+  const y1 = Math.max(0, y - padY);
+  const x2 = Math.min(width, x + w + padX);
+  const y2 = Math.min(height, y + h + padY);
+  return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+}
+
+function drawKiteHighlight(ctx, x, y, w, h, conf, scale = 1) {
+  const line = 2.4 / scale;
+  const corner = Math.max(10 / scale, Math.min(w, h) * 0.32);
+  ctx.save();
+  ctx.lineWidth = line;
+  ctx.strokeStyle = '#bbf7d0';
+  ctx.shadowColor = 'rgba(34,197,94,0.95)';
+  ctx.shadowBlur = 8 / scale;
+  ctx.beginPath();
+  ctx.moveTo(x, y + corner); ctx.lineTo(x, y); ctx.lineTo(x + corner, y);
+  ctx.moveTo(x + w - corner, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + corner);
+  ctx.moveTo(x, y + h - corner); ctx.lineTo(x, y + h); ctx.lineTo(x + corner, y + h);
+  ctx.moveTo(x + w - corner, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - corner);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.4 / scale;
+  ctx.strokeStyle = 'rgba(3,18,10,0.9)';
+  ctx.strokeRect(x, y, w, h);
+
+  if (conf != null) {
+    const text = `${Math.round(conf * 100)}%`;
+    const fontSize = 12 / scale;
+    ctx.font = `800 ${fontSize}px DM Sans, sans-serif`;
+    const tw = ctx.measureText(text).width;
+    const labelW = tw + 10 / scale;
+    const labelH = 18 / scale;
+    const labelX = x + w / 2 - labelW / 2;
+    const labelY = y > labelH + 8 / scale ? y - labelH - 7 / scale : y + h + 7 / scale;
+    ctx.fillStyle = 'rgba(3,18,10,0.88)';
+    ctx.strokeStyle = 'rgba(187,247,208,0.75)';
+    ctx.lineWidth = 1 / scale;
+    ctx.beginPath();
+    ctx.roundRect(labelX, labelY, labelW, labelH, 8 / scale);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#bbf7d0';
+    ctx.fillText(text, labelX + 5 / scale, labelY + 13 / scale);
+  }
+  ctx.restore();
+}
+
 function track(name, data = {}) {
   if (window.kiteAnalytics?.track) {
     window.kiteAnalytics.track(name, data);
@@ -663,12 +719,9 @@ createApp({
       ctx.translate(tx, ty);
       ctx.scale(scale, scale);
       ctx.drawImage(img, 0, 0, cw, ch);
-      ctx.strokeStyle = '#22c55e';
-      ctx.lineWidth   = 1.5 / scale;
-      ctx.shadowColor = 'rgba(0,0,0,0.55)';
-      ctx.shadowBlur  = 3 / scale;
       for (const b of boxes) {
-        ctx.strokeRect(b.x1 * cw, b.y1 * ch, (b.x2 - b.x1) * cw, (b.y2 - b.y1) * ch);
+        const rect = expandedKiteRect(b, cw, ch);
+        drawKiteHighlight(ctx, rect.x, rect.y, rect.w, rect.h, b.conf, scale);
       }
       ctx.restore();
     }
@@ -690,19 +743,9 @@ createApp({
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, ox, oy, sw, sh);
       if (lastKite.value?.boxes?.length) {
-        ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth   = 2;
-        ctx.shadowColor = 'rgba(0,0,0,0.6)';
-        ctx.shadowBlur  = 4;
-        ctx.fillStyle   = '#22c55e';
-        ctx.font        = '600 13px DM Sans, sans-serif';
         for (const b of lastKite.value.boxes) {
-          const x = ox + b.x1 * sw, y = oy + b.y1 * sh;
-          const w = (b.x2 - b.x1) * sw, h = (b.y2 - b.y1) * sh;
-          ctx.strokeRect(x, y, w, h);
-          ctx.shadowBlur = 0;
-          ctx.fillText(`${Math.round(b.conf * 100)}%`, x + 3, y - 5);
-          ctx.shadowBlur = 4;
+          const rect = expandedKiteRect(b, sw, sh);
+          drawKiteHighlight(ctx, ox + rect.x, oy + rect.y, rect.w, rect.h, b.conf);
         }
       }
     }

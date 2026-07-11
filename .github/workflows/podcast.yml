@@ -1,9 +1,9 @@
-name: 🎙️ Podcast quotidien
+name: Podcast quotidien
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # 6h00 heure Paris (UTC+1 hiver, UTC+2 été)
-  workflow_dispatch:        # Déclenchement manuel possible
+    - cron: '0 5 * * *'   # 6h00 heure Paris (UTC+1 hiver, UTC+2 ete)
+  workflow_dispatch:
 
 jobs:
   generate:
@@ -29,14 +29,17 @@ jobs:
       - name: Generate podcast
         env:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
-          OPENAI_API_KEY:  ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/generate_daily_podcast.py
+
+      - name: Generate podcast video
+        run: python scripts/generate_podcast_video.py
 
       - name: Commit podcast
         run: |
-          git config user.name  "KiteBerck Bot"
+          git config user.name "KiteBerck Bot"
           git config user.email "bot@berck.info"
-          git add podcast/today.mp3 podcast/tts/
-          git diff --cached --quiet || git commit -m "🎙️ Podcast $(date +'%Y-%m-%d')"
+          git add podcast/today.mp3 podcast/today.mp4 podcast/video_frames/manifest.json podcast/tts/
+          git diff --cached --quiet || git commit -m "Podcast $(date +'%Y-%m-%d')"
           git pull --rebase origin main
           git push

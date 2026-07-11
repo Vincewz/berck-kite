@@ -203,6 +203,41 @@ nav {
   border-radius: 2px; transition: width .5s linear;
 }
 
+.podcast-video-card {
+  width: min(420px, calc(100vw - 32px));
+  margin-top: 18px;
+  background: rgba(0,0,0,.38);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 8px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 44px rgba(0,0,0,.28);
+}
+.podcast-video-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px 8px;
+}
+.podcast-video-time {
+  color: rgba(255,255,255,.58);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.podcast-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #06111d;
+}
+.podcast-audio-fallback {
+  display: none;
+}
+
 /* ── QUESTIONS GRID ──────────────────────────────────────────────────────── */
 .questions-grid {
   display: grid;

@@ -78,13 +78,22 @@
           </svg>
         </button>
 
-        <!-- ── PODCAST PLAYER ── -->
-        <div class="podcast-bar" id="podcastBar">
+        <!-- ── PODCAST VIDEO ── -->
+        <div class="podcast-video-card" id="podcastVideoCard">
+          <div class="podcast-video-head">
+            <span class="podcast-label">Report vidéo du jour</span>
+            <span class="podcast-video-time">lever du soleil</span>
+          </div>
+          <video id="podcastVideo" class="podcast-video" src="podcast/today.mp4"
+            poster="cams/eole.jpg" preload="metadata" controls playsinline></video>
+        </div>
+
+        <div class="podcast-bar podcast-audio-fallback" id="podcastBar">
           <button class="podcast-btn" id="podcastBtn" onclick="togglePodcast()">
             <span id="podcastIcon">▶</span>
           </button>
           <div class="podcast-info">
-            <span class="podcast-label">🎙️ Report du jour</span>
+            <span class="podcast-label">Report audio du jour</span>
             <div class="podcast-progress">
               <div class="podcast-fill" id="podcastFill"></div>
             </div>
@@ -338,8 +347,17 @@
     window.addEventListener('DOMContentLoaded', () => {
       const audio = document.getElementById('podcastAudio');
       const bar   = document.getElementById('podcastBar');
-      if (!audio || !bar) return;
-      audio.addEventListener('error', () => { bar.style.display = 'none'; });
+      const video = document.getElementById('podcastVideo');
+      const card  = document.getElementById('podcastVideoCard');
+
+      if (bar) bar.style.display = 'none';
+      if (audio && bar) audio.addEventListener('error', () => { bar.style.display = 'none'; });
+      if (video && card && bar) {
+        video.addEventListener('error', () => {
+          card.style.display = 'none';
+          bar.style.display = 'flex';
+        });
+      }
     });
   </script>
 </body>

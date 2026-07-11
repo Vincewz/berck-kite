@@ -326,18 +326,20 @@ def build_video(frames: list[dict], audio_duration: float) -> list[dict]:
     transition = min(0.9, max(0.35, audio_duration / len(frames) * 0.12))
     clip_duration = (audio_duration + transition * (len(frames) - 1)) / len(frames)
     fade_start = max(0, math.floor(audio_duration - 1.0))
+    video_fps = 50
 
     inputs = []
     filters = []
     for idx, frame in enumerate(frames):
         inputs.extend(["-loop", "1", "-t", f"{clip_duration + 0.1:.3f}", "-i", str(BASE / frame["path"])])
-        direction = "t" if idx % 2 == 0 else f"{clip_duration:.3f}-t"
-        x_expr = f"min(iw-ow,max(0,(iw-ow)*({direction})/{clip_duration:.3f}))"
-        y_expr = f"min(ih-oh,max(0,(ih-oh)*(0.35+0.30*t/{clip_duration:.3f})))"
+        ease = f"(0.5-0.5*cos(PI*min(max(t,0),{clip_duration:.3f})/{clip_duration:.3f}))"
+        progress = ease if idx % 2 == 0 else f"(1-{ease})"
+        x_expr = f"min(iw-ow,max(0,(iw-ow)*{progress}))"
+        y_expr = f"min(ih-oh,max(0,(ih-oh)*(0.24+0.18*{ease})))"
         filters.append(
-            f"[{idx}:v]scale=1408:792,setsar=1,"
+            f"[{idx}:v]scale=1600:900,setsar=1,"
             f"crop=1280:720:x='{x_expr}':y='{y_expr}',"
-            f"trim=duration={clip_duration:.3f},setpts=PTS-STARTPTS,fps=25,format=yuv420p[v{idx}]"
+            f"trim=duration={clip_duration:.3f},setpts=PTS-STARTPTS,fps={video_fps},format=yuv420p[v{idx}]"
         )
 
     if len(frames) == 1:
@@ -376,7 +378,7 @@ def build_video(frames: list[dict], audio_duration: float) -> list[dict]:
         "-map",
         f"{len(frames)}:a",
         "-r",
-        "25",
+        str(video_fps),
         "-c:v",
         "libx264",
         "-preset",
@@ -434,6 +436,8 @@ def main() -> None:
         "motion": {
             "type": "bounded_pan",
             "transition": "xfade",
+            "fps": 50,
+            "easing": "cosine ease-in-out",
         },
         "enhancement": {
             "enabled": ENHANCE_FRAMES,

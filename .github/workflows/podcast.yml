@@ -2,7 +2,7 @@ name: Podcast quotidien
 
 on:
   schedule:
-    - cron: '0 5 * * *'   # 6h00 heure Paris (UTC+1 hiver, UTC+2 ete)
+    - cron: '15 8 * * *'  # Apres le lever du soleil a Berck toute l'annee
   workflow_dispatch:
 
 jobs:

@@ -58,6 +58,12 @@ function snapUrl(slug, offset = 0) {
   return `https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/${slug}/${y}/${m}/${day}/small/${h}-00.jpg`;
 }
 
+function track(name, data = {}) {
+  if (window.kiteAnalytics?.track) {
+    window.kiteAnalytics.track(name, data);
+  }
+}
+
 // ── prédiction marées (modèle harmonique simplifié Boulogne-sur-Mer) ──────────
 // Constantes calibrées pour Boulogne (station de référence proche de Berck)
 const TIDE_REF_HW_UTC = new Date('2026-04-23T06:00:00Z').getTime(); // PM référence
@@ -585,7 +591,13 @@ createApp({
       }
     }
 
-    function openCam(cam) { activeCam.value = cam; }
+    function openCam(cam) {
+      activeCam.value = cam;
+      track('Open homepage webcam', {
+        camera: cam.slug,
+        label: cam.label,
+      });
+    }
 
     // ── Viewer kite — zoom auto statique + modal plein écran ────────────────
     const lastKiteImg    = ref(null);
@@ -760,6 +772,11 @@ createApp({
           setTimeout(() => { shareToast.value = false; }, 2500);
         });
       }
+      track('Share conditions', {
+        wind_kt: kt,
+        gust_kt: gkt,
+        direction: dir,
+      });
     }
 
     return {

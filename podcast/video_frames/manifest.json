@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-11T20:18:26.380627+02:00",
+  "generated_at": "2026-07-11T20:26:38.371721+02:00",
   "sunrise": "2026-07-11T05:55:00+02:00",
   "audio": "podcast/today.mp3",
   "video": "podcast/today.mp4",
@@ -58,7 +58,9 @@
   },
   "motion": {
     "type": "bounded_pan",
-    "transition": "xfade"
+    "transition": "xfade",
+    "fps": 50,
+    "easing": "cosine ease-in-out"
   },
   "enhancement": {
     "enabled": false,

@@ -38,6 +38,12 @@ function cameraFromUrl(url = '') {
   return match ? match[1] : '';
 }
 
+function track(name, data = {}) {
+  if (window.kiteAnalytics?.track) {
+    window.kiteAnalytics.track(name, data);
+  }
+}
+
 function dateKey(ts) {
   const d = new Date(ts);
   return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
@@ -268,6 +274,11 @@ createApp({
 
     function openDetection(kite) {
       modalItem.value = kite;
+      track('Open kite detection', {
+        camera: kite?.camera || cameraFromUrl(kite?.image_url),
+        kites: kite?.kites_detected || kite?.boxes?.length || 0,
+        timestamp: kite?.timestamp || '',
+      });
     }
 
     function openLive(cam) {
@@ -277,6 +288,10 @@ createApp({
         label: cam.label,
         live_url: `https://www.skaping.com/berck-sur-mer/${cam.slug}`,
       };
+      track('Open live webcam', {
+        camera: cam.slug,
+        label: cam.label,
+      });
     }
 
     function closeModal() {

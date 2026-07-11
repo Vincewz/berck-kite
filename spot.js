@@ -97,25 +97,36 @@ createApp({
       if (Array.isArray(data?.last_kites)) entries.push(...data.last_kites);
       if (data?.last_kite) entries.push(data.last_kite);
       if (Array.isArray(historyItems)) entries.push(...historyItems);
+      const boxesByImage = new Map();
+      entries.forEach(kite => {
+        if (kite?.image_url && Array.isArray(kite.boxes) && kite.boxes.length) {
+          boxesByImage.set(kite.image_url, kite.boxes);
+        }
+      });
       const seen = new Set();
       return entries
         .filter(kite => kite?.timestamp && kite?.image_url)
-        .filter(kite => Number(kite.kites_detected || 0) > 0 || (Array.isArray(kite.boxes) && kite.boxes.length))
-        .map(kite => ({
-          ...kite,
-          camera: kite.camera || cameraFromUrl(kite.image_url),
-          camera_label: kite.camera_label || cameraLabel(kite.camera || cameraFromUrl(kite.image_url)),
-          boxes: Array.isArray(kite.boxes) ? kite.boxes : [],
-          kites_detected: Number(kite.kites_detected || (Array.isArray(kite.boxes) ? kite.boxes.length : 0) || 1),
-          image_error: false,
-        }))
+        .map(kite => {
+          const boxes = Array.isArray(kite.boxes) && kite.boxes.length
+            ? kite.boxes
+            : (boxesByImage.get(kite.image_url) || []);
+          return {
+            ...kite,
+            camera: kite.camera || cameraFromUrl(kite.image_url),
+            camera_label: kite.camera_label || cameraLabel(kite.camera || cameraFromUrl(kite.image_url)),
+            boxes,
+            kites_detected: Math.max(Number(kite.kites_detected || 0), boxes.length),
+            image_error: false,
+          };
+        })
+        .filter(kite => kite.boxes.length > 0)
+        .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)))
         .filter(kite => {
-          const key = `${kite.timestamp}|${kite.camera || ''}|${kite.image_url}`;
+          const key = kite.image_url;
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
         })
-        .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)))
         .slice(0, 3);
     }
 

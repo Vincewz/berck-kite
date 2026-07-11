@@ -65,6 +65,10 @@ def write_json_all(files, data):
 
 def append_history(entry):
     history = load_history()
+    history = [
+        item for item in history
+        if item.get("image_url") != entry.get("image_url")
+    ]
     history.append(entry)
     write_json_all(HISTORY_FILES, history)
     print(f"Historique: {len(history)} entree(s)")
@@ -103,7 +107,7 @@ def latest_valid_kites(*groups, limit=3):
         for item in group:
             if not item or not item.get("timestamp") or not item.get("image_url") or not item.get("boxes"):
                 continue
-            key = (item.get("timestamp"), item.get("camera"), item.get("image_url"))
+            key = item.get("image_url")
             if key in seen:
                 continue
             seen.add(key)

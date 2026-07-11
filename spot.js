@@ -53,8 +53,11 @@ createApp({
     const liveTick = ref(Date.now());
     const cams = ref([
       { slug: 'eole', label: 'Éole', role: 'Zone kite', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
+      { slug: 'baie-d-authie', label: "Baie d'Authie", role: 'Sud baie', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
+      { slug: 'entonnoir', label: 'Entonnoir', role: 'Centre plage', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
       { slug: 'maritime', label: 'Maritime', role: 'Front de mer', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
       { slug: 'mer', label: 'La Mer', role: 'Large plage', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
+      { slug: 'poste-de-secours', label: 'Poste de Secours', role: 'Zone surveillee', src: '', tries: [], idx: 0, loaded: false, unavailable: false },
     ]);
 
     function resetCam(cam) {
@@ -77,6 +80,11 @@ createApp({
         cam.unavailable = true;
       }
     }
+
+    const orderedCams = computed(() => {
+      const order = ['baie-d-authie', 'entonnoir', 'maritime', 'mer', 'poste-de-secours', 'eole'];
+      return [...cams.value].sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
+    });
 
     function normalizeStatusKites(data) {
       if (Array.isArray(data?.last_kites) && data.last_kites.length) return data.last_kites;
@@ -251,8 +259,12 @@ createApp({
     }
 
     function openLive(cam) {
-      if (cam.unavailable) return;
-      modalItem.value = { ...cam, image_url: cam.src };
+      modalItem.value = {
+        type: 'live',
+        slug: cam.slug,
+        label: cam.label,
+        live_url: `https://www.skaping.com/berck-sur-mer/${cam.slug}`,
+      };
     }
 
     function closeModal() {
@@ -266,6 +278,7 @@ createApp({
     return {
       loading,
       cams,
+      orderedCams,
       status,
       lastKites,
       modalItem,

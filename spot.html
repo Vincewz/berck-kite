@@ -48,7 +48,7 @@
           <span>{{ liveTimeLabel }}</span>
         </div>
         <div class="spot-webcam-grid">
-          <article class="spot-webcam-card" v-for="cam in cams" :key="cam.slug">
+          <article class="spot-webcam-card" v-for="cam in orderedCams" :key="cam.slug">
             <button class="spot-webcam-media" type="button" @click="openLive(cam)" :class="{unavailable: cam.unavailable}">
               <img :src="cam.src" :alt="cam.label" @error="fallbackCam(cam)" @load="cam.loaded = true" :class="{loaded: cam.loaded}"/>
               <span class="spot-live-dot" v-if="!cam.unavailable">LIVE</span>
@@ -153,13 +153,23 @@
     </main>
 
     <div class="kite-modal-bg" v-if="modalItem" @click="closeModal">
-      <div class="kite-modal-frame" @click.stop>
-        <img :src="modalItem.image_url || modalItem.src" class="kite-modal-img" crossorigin="anonymous" :alt="modalItem.label || kiteCamLabel(modalItem)" />
-        <template v-if="modalItem.boxes">
-          <span class="kite-box kite-box-modal" v-for="(box, i) in modalItem.boxes" :key="i" :style="boxStyle(box)">
-            <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
-          </span>
-        </template>
+      <div class="spot-live-modal" v-if="modalItem.type === 'live'" @click.stop>
+        <div class="spot-live-modal-head">
+          <div>
+            <span class="modal-live-dot"></span>
+            <strong>{{ modalItem.label }}</strong>
+          </div>
+          <a :href="modalItem.live_url" target="_blank" rel="noopener">Ouvrir</a>
+        </div>
+        <div class="spot-live-frame">
+          <iframe :src="modalItem.live_url" frameborder="0" allowfullscreen></iframe>
+        </div>
+      </div>
+      <div class="kite-modal-frame" v-else @click.stop>
+        <img :src="modalItem.image_url" class="kite-modal-img" crossorigin="anonymous" :alt="kiteCamLabel(modalItem)" />
+        <span class="kite-box kite-box-modal" v-for="(box, i) in modalItem.boxes" :key="i" :style="boxStyle(box)">
+          <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
+        </span>
       </div>
       <button class="kite-modal-close" @click.stop="closeModal">×</button>
     </div>

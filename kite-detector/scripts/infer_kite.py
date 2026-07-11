@@ -5,21 +5,11 @@ Called by GitHub Actions.
 """
 import json
 import sys
-import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import requests
-
-BERCK_LAT, BERCK_LON = 50.4, 1.6
-MIN_WIND_KT = 8
-MAX_RAIN_MM = 0.3
-MIN_TEMP_C = 3
-SUNSET_GRACE_MIN = 30
-FESTIVAL_MONTH = 4
-FESTIVAL_START = 17
-FESTIVAL_END = 27
+from kite_conditions import current_conditions, now_paris
 
 BASE_DIR = Path(__file__).parent.parent
 MODEL_PATH = BASE_DIR / "models" / "kitesurf_v5.pt"
@@ -37,29 +27,7 @@ CAMERAS = [
     {"name": "mer", "label": "La Mer", "large": False, "minutes": ["00", "15", "30", "45"]},
 ]
 
-paris_tz = ZoneInfo("Europe/Paris")
-now = datetime.now(paris_tz)
-
-
-def to_kt(kmh):
-    return float(kmh) / 1.852
-
-
-def has_east_component(deg):
-    return 0 < float(deg) % 360 < 180
-
-
-def is_festival(dt):
-    return dt.month == FESTIVAL_MONTH and FESTIVAL_START <= dt.day <= FESTIVAL_END
-
-
-def parse_local_dt(value):
-    dt = datetime.fromisoformat(value)
-    return dt.replace(tzinfo=paris_tz) if dt.tzinfo is None else dt.astimezone(paris_tz)
-
-
-def is_daylight_window(dt, sunrise, sunset):
-    return sunrise <= dt <= sunset + timedelta(minutes=SUNSET_GRACE_MIN)
+now = now_paris()
 
 
 def load_previous_status():
@@ -225,49 +193,22 @@ def detect_boxes(img_path, models):
 
 previous_status = load_previous_status()
 
-if is_festival(now):
-    print("Festival de cerfs-volants de Berck - skip")
-    save_status(status_base(previous_status, False, reason="festival de cerfs-volants"))
-    sys.exit(0)
-
 print(f"Fetch meteo Berck ({now.strftime('%H:%M')})...")
-for attempt in range(3):
-    try:
-        r = requests.get(
-            "https://api.open-meteo.com/v1/forecast"
-            f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
-            "&current=wind_speed_10m,wind_direction_10m,temperature_2m,precipitation"
-            "&daily=sunrise,sunset&forecast_days=1"
-            "&wind_speed_unit=kmh&timezone=Europe/Paris",
-            timeout=20,
-        )
-        r.raise_for_status()
-        break
-    except requests.exceptions.RequestException as exc:
-        print(f"  Tentative {attempt + 1}/3 echouee : {exc}")
-        if attempt < 2:
-            time.sleep(10)
-        else:
-            print("API meteo indisponible - skip")
-            sys.exit(0)
-
-payload = r.json()
-sunrise = parse_local_dt(payload["daily"]["sunrise"][0])
-sunset = parse_local_dt(payload["daily"]["sunset"][0])
-sunset_limit = sunset + timedelta(minutes=SUNSET_GRACE_MIN)
-
-if not is_daylight_window(now, sunrise, sunset):
-    reason = f"hors lumiere ({sunrise.strftime('%H:%M')}-{sunset_limit.strftime('%H:%M')})"
-    print(f"{reason} - skip")
-    save_status(status_base(previous_status, False, reason=reason))
+try:
+    conditions = current_conditions(now)
+except requests.exceptions.RequestException:
+    print("API meteo indisponible - skip")
     sys.exit(0)
 
-w = payload["current"]
-wind_kt = to_kt(w["wind_speed_10m"])
-wind_dir = w["wind_direction_10m"]
-temp_c = w["temperature_2m"]
-rain_mm = w.get("precipitation") or 0
+wind_kt = conditions["wind_kt"]
+wind_dir = conditions["wind_dir"]
+temp_c = conditions["temp_c"]
+rain_mm = conditions["rain_mm"]
 print(f"  Vent: {wind_kt:.1f}kt  Dir: {wind_dir}deg  Temp: {temp_c}C  Pluie: {rain_mm}mm")
+print(
+    f"  Lumiere: {conditions['sunrise'].strftime('%H:%M')}"
+    f"-{conditions['sunset'].strftime('%H:%M')} +30min"
+)
 
 common_weather = {
     "wind_kt": round(wind_kt, 1),
@@ -276,22 +217,12 @@ common_weather = {
     "rain_mm": rain_mm,
 }
 
-reasons = []
-if wind_kt < MIN_WIND_KT:
-    reasons.append(f"vent insuffisant ({wind_kt:.0f}kt < {MIN_WIND_KT}kt)")
-if has_east_component(wind_dir):
-    reasons.append(f"vent d'Est ({wind_dir:.0f}deg)")
-if rain_mm >= MAX_RAIN_MM:
-    reasons.append(f"pluie {rain_mm:.1f}mm >= {MAX_RAIN_MM}mm")
-if temp_c < MIN_TEMP_C:
-    reasons.append(f"trop froid ({temp_c}C)")
-
-if reasons:
-    print(f"Conditions non favorables: {', '.join(reasons)}")
+if not conditions["ok"]:
+    print(f"Conditions non favorables: {conditions['reason']}")
     save_status(status_base(
         previous_status,
         False,
-        reason=", ".join(reasons),
+        reason=conditions["reason"],
         **common_weather,
     ))
     sys.exit(0)

@@ -1,8 +1,8 @@
-name: 📸 Collecte images kite
+name: Collecte images kite
 
 on:
   schedule:
-    - cron: '0 19 * * *'   # 21h Paris — après la session du jour
+    - cron: '0 21 * * *'   # after sunset+30 min, even in summer at Berck
   workflow_dispatch:
 
 jobs:
@@ -31,5 +31,5 @@ jobs:
           git diff --cached --quiet && echo "Rien de nouveau" && exit 0
           COUNT=$(git diff --cached --name-only | wc -l)
           TOTAL=$(ls kite-detector/dataset/raw/*.jpg 2>/dev/null | wc -l)
-          git commit -m "📸 +${COUNT} images kite (total: ${TOTAL})"
+          git commit -m "Collecte +${COUNT} images kite (total: ${TOTAL})"
           git push

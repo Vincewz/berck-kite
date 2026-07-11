@@ -1,156 +1,129 @@
 """
-collect_images.py
-Collecte les images Éole (format large) des 30 derniers jours.
+Collect qualifying webcam images for the YOLO dataset.
 
-Filtres :
-  - 10h–18h heure Paris
-  - Vent >= MIN_WIND_KT noeuds
-  - Aucune composante Est dans le vent (dir 180°–360° uniquement)
-  - Précipitations < MAX_RAIN_MM mm/h
-  - Hors festival de cerfs-volants de Berck (17-27 avril chaque année)
-
-Pour accumuler 1000 images, ce script est conçu pour être lancé
-quotidiennement via GitHub Actions — les images déjà téléchargées
-sont skippées automatiquement.
+The weather/daylight rules are shared with inference through kite_conditions.py:
+wind >= 8 kt, no east component, rain < 0.3 mm/h, outside festival,
+and from sunrise to sunset + 30 minutes.
 """
-
-import os, requests, time, math
+import time
+from datetime import timedelta
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
 
-# ── Config ────────────────────────────────────────────────────────────────────
-BERCK_LAT, BERCK_LON = 50.4, 1.6
-MIN_WIND_KT   = 8           # seuil vent (nœuds) — bas pour maximiser les images
-MAX_RAIN_MM   = 0.3         # seuil pluie mm/h
-HOUR_START    = 10
-HOUR_END      = 18
-DAYS_BACK     = 30
+import requests
 
-# Festival de cerfs-volants de Berck : 17-27 avril chaque année
-FESTIVAL_MONTH = 4
-FESTIVAL_START = 17
-FESTIVAL_END   = 27
+from kite_conditions import (
+    MAX_RAIN_MM,
+    MIN_WIND_KT,
+    archive_weather_payload,
+    has_east_component,
+    is_daylight_window,
+    is_festival,
+    now_paris,
+    parse_local_dt,
+    sun_by_date_from_payload,
+    to_kt,
+)
 
-S3_BASE  = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer"
-BASE_URL = f"{S3_BASE}/eole"   # archive: {year}/{month}/{day}/large/{hour}-00.jpg
-# maritime : {year}/{month}/{day}/{hour}-15.jpg  (pas de /large/)
-# mer      : {year}/{month}/{day}/{hour}-30.jpg  (pas de /large/)
-AUX_S3 = {
-    "maritime": (S3_BASE + "/maritime", "15"),
-    "mer":      (S3_BASE + "/mer",      "30"),
-}
-OUT_DIR  = Path(__file__).parent.parent / "dataset" / "raw"
+DAYS_BACK = 30
+S3_BASE = "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer"
+OUT_DIR = Path(__file__).parent.parent / "dataset" / "raw"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-def to_kt(kmh): return float(kmh) / 1.852
+CAMERAS = [
+    {"name": "eole", "prefix": "", "paths": ["large/{hour}-00.jpg"]},
+    {"name": "maritime", "prefix": "maritime_", "paths": ["{hour}-00.jpg", "{hour}-15.jpg", "{hour}-30.jpg", "{hour}-45.jpg"]},
+    {"name": "mer", "prefix": "mer_", "paths": ["{hour}-00.jpg", "{hour}-15.jpg", "{hour}-30.jpg", "{hour}-45.jpg"]},
+]
 
-def has_east_component(deg):
-    """Retourne True si le vent a une composante Est (à exclure)."""
-    d = float(deg) % 360
-    # Composante Est = sin(angle) > 0 → direction entre 1° et 179°
-    return 0 < d < 180
 
-def is_festival(dt):
-    """Retourne True si la date tombe dans le festival de cerfs-volants."""
-    return (dt.month == FESTIVAL_MONTH and
-            FESTIVAL_START <= dt.day <= FESTIVAL_END)
+def candidate_urls(camera, dt):
+    day = f"{dt.year}/{dt.month:02d}/{dt.day:02d}"
+    hour = f"{dt.hour:02d}"
+    return [
+        f"{S3_BASE}/{camera['name']}/{day}/{path.format(hour=hour)}"
+        for path in camera["paths"]
+    ]
 
-# ── 1. Données météo historiques ──────────────────────────────────────────────
-paris_tz = timezone(timedelta(hours=2))
-now   = datetime.now(paris_tz)
-start = (now - timedelta(days=DAYS_BACK)).strftime("%Y-%m-%d")
-end   = now.strftime("%Y-%m-%d")
 
-print(f"Fetch meteo {start} -> {end}...")
-r = requests.get(
-    "https://archive-api.open-meteo.com/v1/archive"
-    f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
-    f"&start_date={start}&end_date={end}"
-    "&hourly=wind_speed_10m,wind_direction_10m,precipitation"
-    "&wind_speed_unit=kmh&timezone=Europe/Paris",
-    timeout=30
-)
-data   = r.json()
-times  = data["hourly"]["time"]
-winds  = data["hourly"]["wind_speed_10m"]
-dirs   = data["hourly"]["wind_direction_10m"]
-rains  = data["hourly"]["precipitation"]
+def filename(camera, dt, kt, deg):
+    return f"{camera['prefix']}{dt.strftime('%Y%m%d_%H00')}_w{int(kt)}kt_d{int(deg)}deg.jpg"
 
-# ── 2. Filtrage ───────────────────────────────────────────────────────────────
-candidates, rejected = [], {"festival": 0, "east": 0, "wind": 0, "rain": 0, "night": 0}
-for i, t in enumerate(times):
-    dt   = datetime.fromisoformat(t)
-    hour = dt.hour
-    kt   = to_kt(winds[i] or 0)
-    deg  = dirs[i] or 0
-    rain = rains[i] or 0
 
-    if not (HOUR_START <= hour < HOUR_END):
-        rejected["night"] += 1; continue
-    if is_festival(dt):
-        rejected["festival"] += 1; continue
-    if has_east_component(deg):
-        rejected["east"] += 1; continue
-    if rain >= MAX_RAIN_MM:
-        rejected["rain"] += 1; continue
-    if kt < MIN_WIND_KT:
-        rejected["wind"] += 1; continue
-    candidates.append((dt, kt, deg, rain))
-
-print(f"  {len(candidates)} creneaux valides | rejetes: {rejected}")
-
-# ── 3. Téléchargement ─────────────────────────────────────────────────────────
-downloaded, skipped, errors = 0, 0, 0
-
-for dt, kt, deg, rain in candidates:
-    fname = f"{dt.strftime('%Y%m%d_%H00')}_w{int(kt)}kt_d{int(deg)}deg.jpg"
-    fpath = OUT_DIR / fname
-
+def save_first_available(camera, dt, kt, deg):
+    fpath = OUT_DIR / filename(camera, dt, kt, deg)
     if fpath.exists():
-        skipped += 1
-        continue
+        return "skipped"
 
-    url = f"{BASE_URL}/{dt.year}/{dt.month:02d}/{dt.day:02d}/large/{dt.hour:02d}-00.jpg"
-    try:
-        resp = requests.get(url, timeout=10)
-        if resp.status_code == 200 and len(resp.content) > 5000:
-            fpath.write_bytes(resp.content)
-            downloaded += 1
-            print(f"  OK  {fname}  ({len(resp.content)//1024}KB)")
-        else:
-            errors += 1
-    except Exception:
-        errors += 1
-    time.sleep(0.05)
-
-total = len(list(OUT_DIR.glob("*.jpg")))
-print(f"\nTermine: {downloaded} telecharges, {skipped} deja la, {errors} erreurs")
-print(f"Total dataset/raw (eole): {total} images")
-print(f"Objectif 1000: encore {max(0, 1000 - total)} images a collecter")
-
-# ── 4. Caméras Maritime + Mer (archive S3, format différent d'eole) ───────────
-# maritime : {year}/{month}/{day}/{hour}-15.jpg  (à XX:15, pas de /large/)
-# mer      : {year}/{month}/{day}/{hour}-30.jpg  (à XX:30, pas de /large/)
-dl2 = sk2 = er2 = 0
-for cam_name, (cam_base, minute) in AUX_S3.items():
-    for dt, kt, deg, _ in candidates:
-        fname = f"{cam_name}_{dt.strftime('%Y%m%d_%H00')}_w{int(kt)}kt_d{int(deg)}deg.jpg"
-        fpath = OUT_DIR / fname
-        if fpath.exists():
-            sk2 += 1
-            continue
-        url = f"{cam_base}/{dt.year}/{dt.month:02d}/{dt.day:02d}/{dt.hour:02d}-{minute}.jpg"
+    for url in candidate_urls(camera, dt):
         try:
             resp = requests.get(url, timeout=10)
             if resp.status_code == 200 and len(resp.content) > 5000:
                 fpath.write_bytes(resp.content)
-                dl2 += 1
-                print(f"  OK  {fname}  ({len(resp.content)//1024}KB)")
-            else:
-                er2 += 1
-        except Exception:
-            er2 += 1
-        time.sleep(0.05)
+                print(f"  OK  {fpath.name}  ({len(resp.content) // 1024}KB)")
+                return "downloaded"
+        except requests.exceptions.RequestException:
+            pass
+        time.sleep(0.03)
+    return "missing"
 
-total2 = len(list(OUT_DIR.glob("maritime_*.jpg"))) + len(list(OUT_DIR.glob("mer_*.jpg")))
-print(f"\nMaritime+Mer: {dl2} telecharges, {sk2} deja la, {er2} manquants (total: {total2})")
+
+now = now_paris()
+start = (now - timedelta(days=DAYS_BACK)).strftime("%Y-%m-%d")
+end = now.strftime("%Y-%m-%d")
+
+print(f"Fetch meteo {start} -> {end}...")
+payload = archive_weather_payload(start, end)
+sun_by_date = sun_by_date_from_payload(payload)
+
+times = payload["hourly"]["time"]
+winds = payload["hourly"]["wind_speed_10m"]
+dirs = payload["hourly"]["wind_direction_10m"]
+rains = payload["hourly"]["precipitation"]
+
+candidates = []
+rejected = {"festival": 0, "east": 0, "wind": 0, "rain": 0, "night": 0}
+
+for i, value in enumerate(times):
+    dt = parse_local_dt(value)
+    kt = to_kt(winds[i] or 0)
+    deg = dirs[i] or 0
+    rain = rains[i] or 0
+    sun = sun_by_date.get(dt.date().isoformat())
+
+    if not sun or not is_daylight_window(dt, sun[0], sun[1]):
+        rejected["night"] += 1
+        continue
+    if is_festival(dt):
+        rejected["festival"] += 1
+        continue
+    if has_east_component(deg):
+        rejected["east"] += 1
+        continue
+    if rain >= MAX_RAIN_MM:
+        rejected["rain"] += 1
+        continue
+    if kt < MIN_WIND_KT:
+        rejected["wind"] += 1
+        continue
+    candidates.append((dt, kt, deg))
+
+print(f"  {len(candidates)} creneaux valides | rejetes: {rejected}")
+
+stats = {camera["name"]: {"downloaded": 0, "skipped": 0, "missing": 0} for camera in CAMERAS}
+
+for camera in CAMERAS:
+    print(f"\n=== {camera['name']} ===")
+    for dt, kt, deg in candidates:
+        result = save_first_available(camera, dt, kt, deg)
+        stats[camera["name"]][result] += 1
+
+total = len(list(OUT_DIR.glob("*.jpg")))
+print("\nTermine")
+for camera in CAMERAS:
+    values = stats[camera["name"]]
+    print(
+        f"  {camera['name']}: {values['downloaded']} telecharges, "
+        f"{values['skipped']} deja la, {values['missing']} manquants"
+    )
+print(f"Total dataset/raw: {total} images")
+print(f"Objectif 1000: encore {max(0, 1000 - total)} images a collecter")

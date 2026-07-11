@@ -26,6 +26,14 @@ jobs:
       - name: Install Python deps
         run: pip install requests
 
+      - name: Install Real-ESRGAN
+        if: vars.ENHANCE_PODCAST_VIDEO == '1'
+        run: |
+          curl -L -o /tmp/realesrgan.zip https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip
+          unzip -q /tmp/realesrgan.zip -d /tmp/realesrgan
+          chmod +x /tmp/realesrgan/realesrgan-ncnn-vulkan
+          echo "/tmp/realesrgan" >> "$GITHUB_PATH"
+
       - name: Generate podcast
         env:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
@@ -33,6 +41,8 @@ jobs:
         run: python scripts/generate_daily_podcast.py
 
       - name: Generate podcast video
+        env:
+          ENHANCE_PODCAST_FRAMES: ${{ vars.ENHANCE_PODCAST_VIDEO }}
         run: python scripts/generate_podcast_video.py
 
       - name: Commit podcast

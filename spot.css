@@ -1,0 +1,394 @@
+.spot-body {
+  background: #f4f7f8;
+}
+
+.spot-nav .nav-logo {
+  text-decoration: none;
+}
+
+.spot-nav-title {
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+.spot-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 18px 14px 46px;
+}
+
+.spot-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+  padding: 20px 0 18px;
+}
+
+.spot-kicker {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.spot-hero h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2.2rem, 8vw, 4.8rem);
+  line-height: .9;
+  letter-spacing: 0;
+}
+
+.spot-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.spot-hero-stats div,
+.spot-panel {
+  background: rgba(255,255,255,.82);
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 12px 30px rgba(15,23,42,.06);
+}
+
+.spot-hero-stats div {
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 76px;
+}
+
+.spot-hero-stats span {
+  display: block;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.spot-hero-stats small {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.spot-panel {
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.spot-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.spot-section-head h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: .98rem;
+  font-weight: 800;
+}
+
+.spot-section-head span {
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.spot-webcam-grid,
+.spot-detection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.spot-webcam-card,
+.spot-detection-card {
+  min-width: 0;
+}
+
+.spot-webcam-media,
+.spot-detection-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: #081522;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.spot-webcam-media img,
+.spot-detection-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: .92;
+}
+
+.spot-webcam-media img.loaded {
+  opacity: 1;
+}
+
+.spot-webcam-media.unavailable {
+  cursor: default;
+}
+
+.spot-webcam-media.unavailable img {
+  opacity: 0;
+}
+
+.spot-webcam-offline {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,.78);
+  font-size: .82rem;
+  font-weight: 800;
+  background:
+    linear-gradient(135deg, rgba(8,21,34,.95), rgba(15,23,42,.9)),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 1px, transparent 1px 12px);
+}
+
+.spot-live-dot {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  background: rgba(239,68,68,.92);
+  color: white;
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.spot-webcam-meta,
+.spot-detection-meta {
+  display: grid;
+  gap: 2px;
+  padding: 9px 2px 0;
+}
+
+.spot-webcam-meta strong,
+.spot-detection-meta strong {
+  color: var(--text);
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.spot-webcam-meta span,
+.spot-detection-meta span {
+  color: var(--muted);
+  font-size: .74rem;
+}
+
+.spot-detection-meta b {
+  color: var(--green);
+  font-size: .78rem;
+}
+
+.spot-insights {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr .9fr;
+  gap: 14px;
+}
+
+.spot-insights .spot-panel {
+  margin-bottom: 0;
+}
+
+.spot-bars,
+.spot-wind-list {
+  display: grid;
+  gap: 9px;
+}
+
+.spot-bar-row,
+.spot-wind-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+}
+
+.spot-bar-row span,
+.spot-wind-row span {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.spot-bar-row div,
+.spot-wind-row div {
+  height: 8px;
+  background: rgba(15,23,42,.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.spot-bar-row i,
+.spot-wind-row i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #22c55e);
+  border-radius: inherit;
+}
+
+.spot-bar-row b,
+.spot-wind-row b {
+  color: var(--text);
+  font-size: .76rem;
+  text-align: right;
+}
+
+.spot-hour-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 6px;
+  height: 132px;
+  align-items: end;
+}
+
+.spot-hour {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 6px;
+  height: 100%;
+}
+
+.spot-hour i {
+  align-self: end;
+  min-height: 5px;
+  background: rgba(15,23,42,.12);
+  border-radius: 5px 5px 2px 2px;
+}
+
+.spot-hour.active i {
+  background: linear-gradient(180deg, #22c55e, #0ea5e9);
+}
+
+.spot-hour span {
+  color: var(--muted);
+  font-size: .64rem;
+  text-align: center;
+}
+
+.spot-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.spot-timeline article {
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(244,247,248,.72);
+}
+
+.spot-timeline strong,
+.spot-timeline b,
+.spot-timeline span,
+.spot-timeline small {
+  display: block;
+}
+
+.spot-timeline strong {
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.spot-timeline span,
+.spot-timeline small {
+  color: var(--muted);
+  font-size: .7rem;
+}
+
+.spot-timeline b {
+  color: var(--green);
+  margin-top: 8px;
+  font-size: .86rem;
+}
+
+.spot-empty {
+  display: grid;
+  gap: 4px;
+  min-height: 120px;
+  align-content: center;
+  justify-items: center;
+  color: var(--muted);
+  text-align: center;
+  border: 1px dashed rgba(15,23,42,.16);
+  border-radius: 8px;
+  background: rgba(244,247,248,.55);
+}
+
+.spot-empty strong {
+  color: var(--text);
+}
+
+.spot-empty.compact {
+  min-height: 132px;
+  font-size: .82rem;
+}
+
+@media (max-width: 860px) {
+  .spot-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .spot-webcam-grid,
+  .spot-detection-grid,
+  .spot-insights,
+  .spot-timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .spot-webcam-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+  }
+
+  .spot-webcam-card {
+    flex: 0 0 min(82vw, 360px);
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .spot-shell {
+    padding-inline: 10px;
+  }
+
+  .spot-hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .spot-hero-stats div {
+    min-width: 0;
+    padding: 9px 8px;
+  }
+
+  .spot-hero-stats span {
+    font-size: 1rem;
+  }
+}

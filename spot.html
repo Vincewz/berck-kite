@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Spot Live - Kite Berck</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="spot.css"/>
+</head>
+<body class="spot-body">
+  <div id="spotApp" v-cloak>
+    <nav class="spot-nav">
+      <a class="nav-logo" href="index.html">Kite<b>Berck</b></a>
+      <span class="spot-nav-title">Spot Live</span>
+      <button class="nav-refresh" @click="refreshAll" :disabled="loading" title="Actualiser">
+        <span :class="{spin: loading}">↺</span>
+      </button>
+    </nav>
+
+    <main class="spot-shell">
+      <header class="spot-hero">
+        <div>
+          <p class="spot-kicker">Berck-sur-Mer</p>
+          <h1>Spot Live</h1>
+        </div>
+        <div class="spot-hero-stats">
+          <div>
+            <span>{{ totalDetections }}</span>
+            <small>kites</small>
+          </div>
+          <div>
+            <span>{{ activeDays }}</span>
+            <small>jours</small>
+          </div>
+          <div>
+            <span>{{ bestHourLabel }}</span>
+            <small>pic</small>
+          </div>
+        </div>
+      </header>
+
+      <section class="spot-panel spot-live-panel">
+        <div class="spot-section-head">
+          <h2>Webcams live</h2>
+          <span>{{ liveTimeLabel }}</span>
+        </div>
+        <div class="spot-webcam-grid">
+          <article class="spot-webcam-card" v-for="cam in cams" :key="cam.slug">
+            <button class="spot-webcam-media" type="button" @click="openLive(cam)" :class="{unavailable: cam.unavailable}">
+              <img :src="cam.src" :alt="cam.label" @error="fallbackCam(cam)" @load="cam.loaded = true" :class="{loaded: cam.loaded}"/>
+              <span class="spot-live-dot" v-if="!cam.unavailable">LIVE</span>
+              <span class="spot-webcam-offline" v-if="cam.unavailable">Image indisponible</span>
+            </button>
+            <div class="spot-webcam-meta">
+              <strong>{{ cam.label }}</strong>
+              <span>{{ cam.role }}</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="spot-panel">
+        <div class="spot-section-head">
+          <h2>Dernières détections</h2>
+          <span v-if="lastRunLabel">{{ lastRunLabel }}</span>
+        </div>
+        <div class="spot-detection-grid" v-if="lastKites.length">
+          <article class="spot-detection-card" v-for="kite in lastKites" :key="kite.camera || kite.image_url">
+            <button class="spot-detection-media" type="button" @click="openDetection(kite)">
+              <img :src="kite.image_url" :alt="'Détection ' + kiteCamLabel(kite)" crossorigin="anonymous"/>
+              <span class="kite-box" v-for="(box, i) in kite.boxes" :key="i" :style="boxStyle(box)">
+                <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
+              </span>
+            </button>
+            <div class="spot-detection-meta">
+              <strong>{{ kiteCamLabel(kite) }}</strong>
+              <span>{{ formatDateTime(kite.timestamp) }}</span>
+              <b>{{ kite.kites_detected }} kite{{ kite.kites_detected > 1 ? 's' : '' }}</b>
+            </div>
+          </article>
+        </div>
+        <div class="spot-empty" v-else>
+          <strong>Aucune détection publiée</strong>
+          <span>La galerie apparaîtra dès que YOLO pousse un résultat positif.</span>
+        </div>
+      </section>
+
+      <section class="spot-insights">
+        <article class="spot-panel">
+          <div class="spot-section-head">
+            <h2>Activité par jour</h2>
+            <span>{{ historyWindowLabel }}</span>
+          </div>
+          <div class="spot-bars" v-if="dailyBars.length">
+            <div class="spot-bar-row" v-for="day in dailyBars" :key="day.key">
+              <span>{{ day.label }}</span>
+              <div><i :style="{width: day.pct + '%'}"></i></div>
+              <b>{{ day.count }}</b>
+            </div>
+          </div>
+          <div class="spot-empty compact" v-else>Historique en attente.</div>
+        </article>
+
+        <article class="spot-panel">
+          <div class="spot-section-head">
+            <h2>Heures chaudes</h2>
+            <span>{{ bestHourLabel }}</span>
+          </div>
+          <div class="spot-hour-grid">
+            <div class="spot-hour" v-for="hour in hourBars" :key="hour.hour" :class="{active: hour.count > 0}">
+              <i :style="{height: hour.pct + '%'}"></i>
+              <span>{{ hour.hour }}h</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="spot-panel">
+          <div class="spot-section-head">
+            <h2>Influence météo</h2>
+            <span>{{ bestWindLabel }}</span>
+          </div>
+          <div class="spot-wind-list" v-if="windRows.length">
+            <div class="spot-wind-row" v-for="row in windRows" :key="row.label">
+              <span>{{ row.label }}</span>
+              <div><i :style="{width: row.pct + '%'}"></i></div>
+              <b>{{ row.count }}</b>
+            </div>
+          </div>
+          <div class="spot-empty compact" v-else>Pas encore assez de runs.</div>
+        </article>
+      </section>
+
+      <section class="spot-panel">
+        <div class="spot-section-head">
+          <h2>Journal du spot</h2>
+          <span>{{ events.length }} entrées</span>
+        </div>
+        <div class="spot-timeline" v-if="events.length">
+          <article v-for="event in events.slice(0, 12)" :key="event.timestamp + event.camera">
+            <div>
+              <strong>{{ kiteCamLabel(event) }}</strong>
+              <span>{{ formatDateTime(event.timestamp) }}</span>
+            </div>
+            <b>{{ event.kites_detected }} kite{{ event.kites_detected > 1 ? 's' : '' }}</b>
+            <small v-if="event.wind_kt">{{ Math.round(event.wind_kt) }} kt · {{ event.wind_dir }}°</small>
+          </article>
+        </div>
+        <div class="spot-empty compact" v-else>Les futures détections rempliront ce journal.</div>
+      </section>
+    </main>
+
+    <div class="kite-modal-bg" v-if="modalItem" @click="closeModal">
+      <div class="kite-modal-frame" @click.stop>
+        <img :src="modalItem.image_url || modalItem.src" class="kite-modal-img" crossorigin="anonymous" :alt="modalItem.label || kiteCamLabel(modalItem)" />
+        <template v-if="modalItem.boxes">
+          <span class="kite-box kite-box-modal" v-for="(box, i) in modalItem.boxes" :key="i" :style="boxStyle(box)">
+            <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
+          </span>
+        </template>
+      </div>
+      <button class="kite-modal-close" @click.stop="closeModal">×</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="spot.js"></script>
+</body>
+</html>

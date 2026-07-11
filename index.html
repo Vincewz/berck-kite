@@ -17,6 +17,7 @@
     <!-- ── STICKY NAV ── -->
     <nav>
       <span class="nav-logo">Kite<b>Berck</b></span>
+      <a class="nav-link" href="spot.html">Spot Live</a>
       <span class="nav-update" v-if="lastUpdate">
         <span class="live-dot"></span> {{ timeAgo }}
       </span>
@@ -270,62 +271,7 @@
         <div id="berck-map"></div>
       </section>
 
-      <!-- ═══════════════════════════════════════════
-           WEBCAMS — scroll horizontal
-      ════════════════════════════════════════════ -->
-      <section class="webcam-section">
-        <div class="section-title">📷 Webcams live</div>
-        <div class="webcam-scroll">
-          <div class="webcam-thumb" v-for="cam in WEBCAMS" :key="cam.slug" @click="openCam(cam)">
-            <div class="webcam-preview">
-              <img :src="snapUrl(cam.slug)" :alt="cam.label"
-                @load="e => e.target.classList.add('loaded')"
-                @error="e => { if(!e.target._tried){ e.target._tried=true; e.target.src=snapUrl(cam.slug,1) } else { e.target.src='cams/'+cam.slug+'.jpg' } }"
-                loading="lazy"/>
-              <div class="webcam-live-badge">● LIVE</div>
-            </div>
-            <div class="webcam-name">{{ cam.label }}</div>
-          </div>
-        </div>
-      </section>
-
     </template>
-
-    <!-- DERNIER KITE DÉTECTÉ -->
-    <section v-if="lastKite" class="last-kite-section">
-      <h2 class="section-title">Dernier kite détecté</h2>
-      <div class="last-kite-card">
-        <div class="last-kite-img-wrap">
-          <img :src="lastKite.image_url" class="last-kite-img" crossorigin="anonymous"
-               @load="drawKiteBoxes" ref="lastKiteImg" style="display:none"/>
-          <canvas class="last-kite-canvas" ref="lastKiteCanvas"
-            style="cursor:zoom-in"
-            @click="openKiteModal"
-            title="Cliquer pour agrandir">
-          </canvas>
-          <div class="kite-expand-hint">⤢</div>
-        </div>
-        <div class="last-kite-info">
-          <div class="last-kite-date">
-            {{ new Date(lastKite.timestamp).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) }}
-            à {{ new Date(lastKite.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) }}
-          </div>
-          <div class="last-kite-count">
-            {{ lastKite.kites_detected }} kite{{ lastKite.kites_detected > 1 ? 's' : '' }} détecté{{ lastKite.kites_detected > 1 ? 's' : '' }}
-          </div>
-          <div class="last-kite-conf" v-if="lastKite.boxes && lastKite.boxes.length">
-            Confiance : {{ Math.round(lastKite.boxes[0].conf * 100) }}%
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MODAL KITE PLEIN ÉCRAN -->
-    <div class="kite-modal-bg" v-if="kiteModalOpen" @click="closeKiteModal">
-      <canvas class="kite-modal-canvas" ref="kiteModalCanvas"></canvas>
-      <button class="kite-modal-close" @click.stop="closeKiteModal">✕</button>
-    </div>
-
     <!-- ERROR -->
     <div v-if="error" class="error-screen">
       <p>⚠ {{ error }}</p>

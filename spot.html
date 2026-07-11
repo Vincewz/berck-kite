@@ -73,9 +73,10 @@
           <span v-if="lastRunLabel">{{ lastRunLabel }}</span>
         </div>
         <div class="spot-detection-grid" v-if="lastKites.length">
-          <article class="spot-detection-card" v-for="kite in lastKites" :key="kite.camera || kite.image_url">
+          <article class="spot-detection-card" v-for="kite in lastKites" :key="kite.timestamp + '|' + kite.image_url">
             <button class="spot-detection-media" type="button" @click="openDetection(kite)">
-              <img :src="kite.image_url" :alt="'Détection ' + kiteCamLabel(kite)" crossorigin="anonymous"/>
+              <img :src="kite.image_url" :alt="'Détection ' + kiteCamLabel(kite)" @error="markDetectionImageError(kite)"/>
+              <span class="spot-webcam-offline" v-if="kite.image_error">Image indisponible</span>
               <span class="kite-box" v-for="(box, i) in kite.boxes" :key="i" :style="boxStyle(box)">
                 <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
               </span>
@@ -171,7 +172,7 @@
         </div>
       </div>
       <div class="kite-modal-frame" v-else @click.stop>
-        <img :src="modalItem.image_url" class="kite-modal-img" crossorigin="anonymous" :alt="kiteCamLabel(modalItem)" />
+        <img :src="modalItem.image_url" class="kite-modal-img" :alt="kiteCamLabel(modalItem)" />
         <span class="kite-box kite-box-modal" v-for="(box, i) in modalItem.boxes" :key="i" :style="boxStyle(box)">
           <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
         </span>

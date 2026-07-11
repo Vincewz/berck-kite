@@ -92,13 +92,23 @@ createApp({
       return [...cams.value].sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
     });
 
-    function normalizeStatusKites(data) {
+    function normalizeStatusKites(data, historyItems = []) {
       const entries = [];
       if (Array.isArray(data?.last_kites)) entries.push(...data.last_kites);
       if (data?.last_kite) entries.push(data.last_kite);
+      if (Array.isArray(historyItems)) entries.push(...historyItems);
       const seen = new Set();
       return entries
-        .filter(kite => kite?.timestamp && kite?.image_url && Array.isArray(kite.boxes) && kite.boxes.length)
+        .filter(kite => kite?.timestamp && kite?.image_url)
+        .filter(kite => Number(kite.kites_detected || 0) > 0 || (Array.isArray(kite.boxes) && kite.boxes.length))
+        .map(kite => ({
+          ...kite,
+          camera: kite.camera || cameraFromUrl(kite.image_url),
+          camera_label: kite.camera_label || cameraLabel(kite.camera || cameraFromUrl(kite.image_url)),
+          boxes: Array.isArray(kite.boxes) ? kite.boxes : [],
+          kites_detected: Number(kite.kites_detected || (Array.isArray(kite.boxes) ? kite.boxes.length : 0) || 1),
+          image_error: false,
+        }))
         .filter(kite => {
           const key = `${kite.timestamp}|${kite.camera || ''}|${kite.image_url}`;
           if (seen.has(key)) return false;
@@ -143,8 +153,8 @@ createApp({
       const statusData = pickLatestStatus([rootStatus, publicStatus]);
       const historyData = pickLongestHistory([rootHistory, publicHistory]);
       status.value = statusData;
-      lastKites.value = normalizeStatusKites(statusData);
       history.value = historyData;
+      lastKites.value = normalizeStatusKites(statusData, historyData);
       loading.value = false;
       liveTick.value = Date.now();
     }
@@ -281,6 +291,10 @@ createApp({
       });
     }
 
+    function markDetectionImageError(kite) {
+      kite.image_error = true;
+    }
+
     function openLive(cam) {
       modalItem.value = {
         type: 'live',
@@ -326,6 +340,7 @@ createApp({
       boxStyle,
       formatDateTime,
       openDetection,
+      markDetectionImageError,
       openLive,
       closeModal,
     };

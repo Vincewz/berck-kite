@@ -76,7 +76,7 @@ jobs:
         run: |
           git config user.name  "KiteBerck Bot"
           git config user.email "bot@berck.info"
-          git add berck-kite/kite_status.json berck-kite/detection_history.json
+          git add kite_status.json detection_history.json berck-kite/kite_status.json berck-kite/detection_history.json
           git add kite-detector/dataset/raw/ 2>/dev/null || true
           git diff --cached --quiet && echo "Aucun changement" && exit 0
           DATE=$(date +'%Y-%m-%d %H:%M')

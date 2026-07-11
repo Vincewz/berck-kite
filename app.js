@@ -37,6 +37,16 @@ function speedColor(kmh) {
 
 function toKt(kmh) { return kmh != null ? Math.round(kmh / 1.852) : 0; }
 
+const HERO_FALLBACK_BG = 'cams/maritime.jpg';
+const HERO_BG_CANDIDATES = [
+  { slug: 'eole', size: 'large' },
+  { slug: 'maritime', size: 'small' },
+  { slug: 'mer', size: 'small' },
+  { slug: 'poste-de-secours', size: 'small' },
+  { slug: 'maritime', size: 'large' },
+  { slug: 'mer', size: 'large' },
+];
+
 function wmoIcon(code) {
   if (code === 0) return '☀️';
   if (code <= 2)  return '🌤️';
@@ -49,13 +59,33 @@ function wmoIcon(code) {
   return '⛈️';
 }
 
-function snapUrl(slug, offset = 0) {
+function snapUrl(slug, offset = 0, size = 'small') {
   const d = new Date(Date.now() - offset * 3_600_000);
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
   const day = String(d.getDate()).padStart(2,'0');
   const h = String(d.getHours()).padStart(2,'0');
-  return `https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/${slug}/${y}/${m}/${day}/small/${h}-00.jpg`;
+  return `https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/${slug}/${y}/${m}/${day}/${size}/${h}-00.jpg`;
+}
+
+function preloadImage(url, timeoutMs = 4500) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.onload = null;
+      img.onerror = null;
+      reject(new Error('image timeout'));
+    }, timeoutMs);
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(url);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error('image unavailable'));
+    };
+    img.src = url;
+  });
 }
 
 function track(name, data = {}) {
@@ -266,10 +296,10 @@ createApp({
     const activeCam  = ref(null);
     const tides   = ref([]);
     const tideMs  = ref(Date.now());
-    const heroBg  = ref(null);
+    const heroBg  = ref(HERO_FALLBACK_BG);
     const kiteDetection = ref(null);
     const lastKite = ref(null);
-    let chart = null, refreshTimer = null, tideTimer = null;
+    let chart = null, refreshTimer = null, tideTimer = null, heroBgRequest = 0;
 
     // ── Détection kites YOLO (mise à jour quotidienne via GitHub Actions) ────
     async function fetchKiteStatus() {
@@ -288,19 +318,20 @@ createApp({
     }
 
     // ── Fond hero = dernière image webcam Éole disponible ────────────────────
-    function loadHeroBg() {
-      const tryOffset = (offset) => new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload  = () => resolve(snapUrl('eole', offset));
-        img.onerror = () => reject();
-        img.src = snapUrl('eole', offset);
-      });
-      // Essaie l'heure actuelle, puis -1h, -2h
-      tryOffset(0)
-        .catch(() => tryOffset(1))
-        .catch(() => tryOffset(2))
-        .then(url => { heroBg.value = url; })
-        .catch(() => {});
+    async function loadHeroBg() {
+      const requestId = ++heroBgRequest;
+      const urls = [0, 1, 2, 3, 4, 5]
+        .flatMap(offset => HERO_BG_CANDIDATES.map(cam => snapUrl(cam.slug, offset, cam.size)));
+
+      for (const url of urls) {
+        try {
+          const loadedUrl = await preloadImage(url);
+          if (requestId === heroBgRequest) heroBg.value = loadedUrl;
+          return;
+        } catch {}
+      }
+
+      if (requestId === heroBgRequest) heroBg.value = HERO_FALLBACK_BG;
     }
 
     // ── marée en temps réel ───────────────────────────────────────────────

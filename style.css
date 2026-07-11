@@ -87,7 +87,7 @@ nav {
   padding: 36px 20px 30px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   overflow: hidden;
-  background: #0a1420 center / cover no-repeat;
+  background: #0a1420 url('cams/maritime.jpg') center 38% / cover no-repeat;
   transition: background-image .4s ease;
 }
 .hero::before {

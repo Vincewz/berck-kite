@@ -71,9 +71,6 @@
     <nav>
       <span class="nav-logo">Kite<b>Berck</b></span>
       <a class="nav-link" href="spot.html">Spot Live</a>
-      <span class="nav-update" v-if="lastUpdate">
-        <span class="live-dot"></span> {{ timeAgo }}
-      </span>
       <button class="nav-refresh" @click="fetchAll" :disabled="loading">
         <span :class="{spin: loading}">↺</span>
       </button>
@@ -332,6 +329,22 @@
         <div class="section-title">🗺️ Carte vent <span class="badge-arome">AROME</span></div>
         <div id="berck-map"></div>
       </section>
+
+      <footer class="site-footer">
+        <div class="site-footer-brand">
+          <span class="footer-logo">Kite<b>Berck</b></span>
+          <p>Conditions, webcams et detections kite pour suivre le spot de Berck-sur-Mer sans bruit inutile.</p>
+        </div>
+        <div class="site-footer-links">
+          <a href="spot.html">Spot Live</a>
+          <a href="https://berck.info/sitemap.xml">Sitemap</a>
+          <a href="https://www.skaping.com/berck-sur-mer/maritime" target="_blank" rel="noopener">Webcam Maritime</a>
+        </div>
+        <div class="site-footer-meta">
+          <span>Vent AROME et webcams Skaping</span>
+          <span>Berck-sur-Mer, Hauts-de-France</span>
+        </div>
+      </footer>
 
     </template>
     <!-- ERROR -->

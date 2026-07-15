@@ -63,6 +63,52 @@ def media_duration(path: Path) -> float:
     return float(payload["format"]["duration"])
 
 
+def solar_event_utc(date_obj, latitude: float, longitude: float, sunrise: bool = True) -> float:
+    zenith = 90.833
+    day_of_year = date_obj.timetuple().tm_yday
+    lng_hour = longitude / 15
+    t = day_of_year + ((6 if sunrise else 18) - lng_hour) / 24
+    mean_anomaly = (0.9856 * t) - 3.289
+    true_long = (
+        mean_anomaly
+        + (1.916 * math.sin(math.radians(mean_anomaly)))
+        + (0.020 * math.sin(math.radians(2 * mean_anomaly)))
+        + 282.634
+    ) % 360
+    right_ascension = math.degrees(math.atan(0.91764 * math.tan(math.radians(true_long)))) % 360
+    right_ascension += (math.floor(true_long / 90) * 90) - (math.floor(right_ascension / 90) * 90)
+    right_ascension /= 15
+
+    sin_declination = 0.39782 * math.sin(math.radians(true_long))
+    cos_declination = math.cos(math.asin(sin_declination))
+    cos_hour = (
+        math.cos(math.radians(zenith))
+        - (sin_declination * math.sin(math.radians(latitude)))
+    ) / (cos_declination * math.cos(math.radians(latitude)))
+    cos_hour = max(-1, min(1, cos_hour))
+
+    hour_angle = 360 - math.degrees(math.acos(cos_hour)) if sunrise else math.degrees(math.acos(cos_hour))
+    hour_angle /= 15
+    local_mean_time = hour_angle + right_ascension - (0.06571 * t) - 6.622
+    return (local_mean_time - lng_hour) % 24
+
+
+def approximate_sunrise(now: datetime) -> datetime:
+    utc_hour = solar_event_utc(now.date(), BERCK_LAT, BERCK_LON, sunrise=True)
+    hour = int(utc_hour)
+    minute_float = (utc_hour - hour) * 60
+    minute = int(minute_float)
+    second = int(round((minute_float - minute) * 60))
+    if second == 60:
+        second = 0
+        minute += 1
+    if minute == 60:
+        minute = 0
+        hour = (hour + 1) % 24
+    utc_dt = datetime(now.year, now.month, now.day, hour, minute, second, tzinfo=ZoneInfo("UTC"))
+    return utc_dt.astimezone(TZ)
+
+
 def fetch_sunrise(now: datetime) -> datetime:
     today = now.date().isoformat()
     url = (
@@ -72,10 +118,22 @@ def fetch_sunrise(now: datetime) -> datetime:
         "&timezone=Europe/Paris"
         f"&start_date={today}&end_date={today}"
     )
-    response = requests.get(url, timeout=15)
-    response.raise_for_status()
-    sunrise = response.json()["daily"]["sunrise"][0]
-    return datetime.fromisoformat(sunrise).replace(tzinfo=TZ)
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            response = requests.get(url, timeout=(8, 25))
+            response.raise_for_status()
+            sunrise = response.json()["daily"]["sunrise"][0]
+            return datetime.fromisoformat(sunrise).replace(tzinfo=TZ)
+        except requests.RequestException as exc:
+            last_error = exc
+            print(f"Open-Meteo sunrise attempt {attempt}/3 failed: {exc}")
+            time.sleep(attempt * 2)
+
+    fallback = approximate_sunrise(now)
+    print(f"Open-Meteo sunrise unavailable, using local estimate: {fallback.isoformat()} ({last_error})")
+    return fallback
+
 
 
 def round_to_quarter(dt: datetime) -> datetime:

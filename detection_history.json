@@ -291,5 +291,26 @@
         "conf": 0.277
       }
     ]
+  },
+  {
+    "wind_kt": 10.0,
+    "wind_dir": 336,
+    "temp_c": 25.7,
+    "rain_mm": 0,
+    "timestamp": "2026-07-17T17:47:14.237640+02:00",
+    "camera": "eole",
+    "camera_label": "Eole",
+    "kites_detected": 1,
+    "max_conf": 0.427,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/17/large/17-00.jpg",
+    "boxes": [
+      {
+        "x1": 0.1638,
+        "y1": 0.3704,
+        "x2": 0.1792,
+        "y2": 0.3969,
+        "conf": 0.427
+      }
+    ]
   }
 ]

@@ -214,5 +214,26 @@
     "kites_detected": 1,
     "max_conf": 0.807,
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/04/large/16-00.jpg"
+  },
+  {
+    "wind_kt": 8.2,
+    "wind_dir": 346,
+    "temp_c": 24.5,
+    "rain_mm": 0,
+    "timestamp": "2026-07-17T13:44:11.399314+02:00",
+    "camera": "mer",
+    "camera_label": "La Mer",
+    "kites_detected": 1,
+    "max_conf": 0.704,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/17/13-30.jpg",
+    "boxes": [
+      {
+        "x1": 0.9136,
+        "y1": 0.4217,
+        "x2": 0.9268,
+        "y2": 0.4451,
+        "conf": 0.704
+      }
+    ]
   }
 ]

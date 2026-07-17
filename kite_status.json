@@ -1,20 +1,67 @@
 {
-  "timestamp": null,
-  "conditions_ok": false,
-  "reason": "Première détection pas encore effectuée",
-  "wind_kt": 0,
-  "wind_dir": 0,
-  "temp_c": 0,
-  "kites_detected": 0,
-  "boxes": [],
+  "timestamp": "2026-07-17T13:44:11.399314+02:00",
+  "conditions_ok": true,
+  "wind_kt": 8.2,
+  "wind_dir": 346,
+  "temp_c": 24.5,
+  "rain_mm": 0,
+  "kites_detected": 1,
+  "boxes": [
+    {
+      "x1": 0.9136,
+      "y1": 0.4217,
+      "x2": 0.9268,
+      "y2": 0.4451,
+      "conf": 0.704
+    }
+  ],
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/17/13-30.jpg",
   "last_kite": {
-    "timestamp": "2026-04-11T17:00:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/04/11/large/17-00.jpg",
-    "kites_detected": 3,
+    "camera": "mer",
+    "camera_label": "La Mer",
+    "timestamp": "2026-07-17T13:44:11.399314+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/17/13-30.jpg",
+    "kites_detected": 1,
     "boxes": [
-      {"x1": 0.2699, "y1": 0.4272, "x2": 0.2813, "y2": 0.4445, "conf": 0.692},
-      {"x1": 0.3941, "y1": 0.4290, "x2": 0.4063, "y2": 0.4445, "conf": 0.538},
-      {"x1": 0.5061, "y1": 0.4334, "x2": 0.5172, "y2": 0.4538, "conf": 0.535}
+      {
+        "x1": 0.9136,
+        "y1": 0.4217,
+        "x2": 0.9268,
+        "y2": 0.4451,
+        "conf": 0.704
+      }
     ]
-  }
+  },
+  "last_kites": [
+    {
+      "camera": "mer",
+      "camera_label": "La Mer",
+      "timestamp": "2026-07-17T13:44:11.399314+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/17/13-30.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.9136,
+          "y1": 0.4217,
+          "x2": 0.9268,
+          "y2": 0.4451,
+          "conf": 0.704
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-07-04T16:46:37.770243+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/04/large/16-00.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.9127,
+          "y1": 0.4317,
+          "x2": 0.9255,
+          "y2": 0.454,
+          "conf": 0.807
+        }
+      ]
+    }
+  ]
 }

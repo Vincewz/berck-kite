@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-07-17T12:12:12.191382+02:00",
-  "sunrise": "2026-07-17T06:01:00+02:00",
+  "generated_at": "2026-07-18T11:45:29.372495+02:00",
+  "sunrise": "2026-07-18T06:03:00+02:00",
   "audio": "podcast/today.mp3",
   "video": "podcast/today.mp4",
-  "audio_duration_seconds": 63.843,
+  "audio_duration_seconds": 59.716,
   "frames": [
     {
       "camera": "baie-d-authie",
       "label": "Baie d'Authie",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/baie-d-authie/2026/07/17/large/06-00.jpg",
-      "captured_at": "2026-07-17T06:00:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/baie-d-authie/2026/07/18/large/06-00.jpg",
+      "captured_at": "2026-07-18T06:00:00+02:00",
       "path": "podcast/video_frames/baie-d-authie.jpg"
     },
     {
@@ -19,8 +19,8 @@
       "label": "Entonnoir",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/entonnoir/2026/07/17/06-00.jpg",
-      "captured_at": "2026-07-17T06:00:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/entonnoir/2026/07/18/06-00.jpg",
+      "captured_at": "2026-07-18T06:00:00+02:00",
       "path": "podcast/video_frames/entonnoir.jpg"
     },
     {
@@ -28,8 +28,8 @@
       "label": "Maritime",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/07/17/06-15.jpg",
-      "captured_at": "2026-07-17T06:15:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/07/18/06-15.jpg",
+      "captured_at": "2026-07-18T06:15:00+02:00",
       "path": "podcast/video_frames/maritime.jpg"
     },
     {
@@ -37,8 +37,8 @@
       "label": "La Mer",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/17/05-30.jpg",
-      "captured_at": "2026-07-17T05:30:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/18/05-30.jpg",
+      "captured_at": "2026-07-18T05:30:00+02:00",
       "path": "podcast/video_frames/mer.jpg"
     },
     {
@@ -46,8 +46,8 @@
       "label": "Poste de Secours",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/poste-de-secours/2026/07/17/05-45.jpg",
-      "captured_at": "2026-07-17T05:45:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/poste-de-secours/2026/07/18/05-45.jpg",
+      "captured_at": "2026-07-18T05:45:00+02:00",
       "path": "podcast/video_frames/poste-de-secours.jpg"
     },
     {
@@ -55,14 +55,14 @@
       "label": "Eole",
       "source": "archive",
       "enhanced": false,
-      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/17/large/06-00.jpg",
-      "captured_at": "2026-07-17T06:00:00+02:00",
+      "url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/07/18/large/06-00.jpg",
+      "captured_at": "2026-07-18T06:00:00+02:00",
       "path": "podcast/video_frames/eole.jpg"
     }
   ],
   "subtitles": {
     "source": "podcast/tts/script.txt",
-    "events": 19,
+    "events": 18,
     "burned_in": true
   },
   "motion": {

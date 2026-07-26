@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-07-26T10:40:36.390946+02:00",
+  "timestamp": "2026-07-26T11:28:46.871330+02:00",
   "conditions_ok": true,
-  "wind_kt": 16.0,
-  "wind_dir": 251,
-  "temp_c": 19.4,
+  "wind_kt": 15.8,
+  "wind_dir": 249,
+  "temp_c": 19.6,
   "rain_mm": 0,
-  "kites_detected": 1,
+  "kites_detected": 2,
   "boxes": [
     {
       "x1": 0.0837,
@@ -19,7 +19,7 @@
   "last_kite": {
     "camera": "mer",
     "camera_label": "La Mer",
-    "timestamp": "2026-07-26T10:40:36.390946+02:00",
+    "timestamp": "2026-07-26T11:28:46.871330+02:00",
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/26/10-30.jpg",
     "kites_detected": 1,
     "boxes": [
@@ -34,9 +34,25 @@
   },
   "last_kites": [
     {
+      "camera": "maritime",
+      "camera_label": "Maritime",
+      "timestamp": "2026-07-26T11:28:46.871330+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/07/26/11-15.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.5448,
+          "y1": 0.4916,
+          "x2": 0.5576,
+          "y2": 0.5112,
+          "conf": 0.202
+        }
+      ]
+    },
+    {
       "camera": "mer",
       "camera_label": "La Mer",
-      "timestamp": "2026-07-26T10:40:36.390946+02:00",
+      "timestamp": "2026-07-26T11:28:46.871330+02:00",
       "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/26/10-30.jpg",
       "kites_detected": 1,
       "boxes": [
@@ -69,22 +85,6 @@
           "x2": 0.2317,
           "y2": 0.4641,
           "conf": 0.197
-        }
-      ]
-    },
-    {
-      "camera": "mer",
-      "camera_label": "La Mer",
-      "timestamp": "2026-07-25T18:14:30.671701+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/25/17-30.jpg",
-      "kites_detected": 1,
-      "boxes": [
-        {
-          "x1": 0.897,
-          "y1": 0.3648,
-          "x2": 0.9185,
-          "y2": 0.4006,
-          "conf": 0.396
         }
       ]
     }

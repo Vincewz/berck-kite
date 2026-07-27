@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-07-27T14:38:26.869864+02:00",
+  "timestamp": "2026-07-27T15:23:15.129204+02:00",
   "conditions_ok": true,
-  "wind_kt": 10.7,
+  "wind_kt": 11.1,
   "wind_dir": 264,
   "temp_c": 21.2,
   "rain_mm": 0,
-  "kites_detected": 2,
+  "kites_detected": 3,
   "boxes": [
     {
       "x1": 0.8569,
@@ -26,7 +26,7 @@
   "last_kite": {
     "camera": "mer",
     "camera_label": "La Mer",
-    "timestamp": "2026-07-27T14:38:26.869864+02:00",
+    "timestamp": "2026-07-27T15:23:15.129204+02:00",
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/27/14-30.jpg",
     "kites_detected": 2,
     "boxes": [
@@ -48,9 +48,25 @@
   },
   "last_kites": [
     {
+      "camera": "maritime",
+      "camera_label": "Maritime",
+      "timestamp": "2026-07-27T15:23:15.129204+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/07/27/15-15.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.2371,
+          "y1": 0.3814,
+          "x2": 0.2493,
+          "y2": 0.4021,
+          "conf": 0.383
+        }
+      ]
+    },
+    {
       "camera": "mer",
       "camera_label": "La Mer",
-      "timestamp": "2026-07-27T14:38:26.869864+02:00",
+      "timestamp": "2026-07-27T15:23:15.129204+02:00",
       "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/27/14-30.jpg",
       "kites_detected": 2,
       "boxes": [
@@ -83,29 +99,6 @@
           "x2": 0.6513,
           "y2": 0.4867,
           "conf": 0.316
-        }
-      ]
-    },
-    {
-      "camera": "mer",
-      "camera_label": "La Mer",
-      "timestamp": "2026-07-27T12:10:49.401464+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/07/27/11-30.jpg",
-      "kites_detected": 2,
-      "boxes": [
-        {
-          "x1": 0.0721,
-          "y1": 0.4511,
-          "x2": 0.0838,
-          "y2": 0.4728,
-          "conf": 0.32
-        },
-        {
-          "x1": 0.1199,
-          "y1": 0.3729,
-          "x2": 0.1346,
-          "y2": 0.3987,
-          "conf": 0.307
         }
       ]
     }

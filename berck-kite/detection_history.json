@@ -2881,5 +2881,26 @@
         "conf": 0.403
       }
     ]
+  },
+  {
+    "wind_kt": 15.5,
+    "wind_dir": 252,
+    "temp_c": 19.4,
+    "rain_mm": 0,
+    "timestamp": "2026-08-05T20:58:13.006714+02:00",
+    "camera": "maritime",
+    "camera_label": "Maritime",
+    "kites_detected": 1,
+    "max_conf": 0.719,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/05/20-15.jpg",
+    "boxes": [
+      {
+        "x1": 0.9143,
+        "y1": 0.4743,
+        "x2": 0.9238,
+        "y2": 0.4922,
+        "conf": 0.719
+      }
+    ]
   }
 ]

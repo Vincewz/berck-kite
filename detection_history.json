@@ -2664,5 +2664,33 @@
         "conf": 0.572
       }
     ]
+  },
+  {
+    "wind_kt": 17.1,
+    "wind_dir": 242,
+    "temp_c": 21.3,
+    "rain_mm": 0,
+    "timestamp": "2026-08-05T12:48:12.700004+02:00",
+    "camera": "mer",
+    "camera_label": "La Mer",
+    "kites_detected": 2,
+    "max_conf": 0.62,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/08/05/12-30.jpg",
+    "boxes": [
+      {
+        "x1": 0.5484,
+        "y1": 0.435,
+        "x2": 0.5594,
+        "y2": 0.4547,
+        "conf": 0.62
+      },
+      {
+        "x1": 0.6726,
+        "y1": 0.4435,
+        "x2": 0.6828,
+        "y2": 0.4627,
+        "conf": 0.467
+      }
+    ]
   }
 ]

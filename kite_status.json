@@ -1,21 +1,8 @@
 {
-  "timestamp": "2026-08-08T18:57:45.613080+02:00",
-  "conditions_ok": true,
-  "wind_kt": 9.4,
-  "wind_dir": 351,
-  "temp_c": 25.1,
-  "rain_mm": 0,
+  "timestamp": "2026-08-09T15:26:08.005296+02:00",
+  "conditions_ok": false,
   "kites_detected": 0,
-  "boxes": [
-    {
-      "x1": 0.599,
-      "y1": 0.4664,
-      "x2": 0.6108,
-      "y2": 0.4878,
-      "conf": 0.597
-    }
-  ],
-  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/08/16-15.jpg",
+  "boxes": [],
   "last_kite": {
     "camera": "maritime",
     "camera_label": "Maritime",
@@ -81,5 +68,10 @@
         }
       ]
     }
-  ]
+  ],
+  "reason": "vent 7kt < 8kt",
+  "wind_kt": 7.0,
+  "wind_dir": 210,
+  "temp_c": 29.4,
+  "rain_mm": 0
 }

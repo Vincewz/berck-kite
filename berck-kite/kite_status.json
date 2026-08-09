@@ -1,25 +1,54 @@
 {
-  "timestamp": "2026-08-09T15:26:08.005296+02:00",
-  "conditions_ok": false,
-  "kites_detected": 0,
-  "boxes": [],
+  "timestamp": "2026-08-09T16:56:06.284322+02:00",
+  "conditions_ok": true,
+  "wind_kt": 9.3,
+  "wind_dir": 275,
+  "temp_c": 26.8,
+  "rain_mm": 0,
+  "kites_detected": 1,
+  "boxes": [
+    {
+      "x1": 0.8798,
+      "y1": 0.4794,
+      "x2": 0.8888,
+      "y2": 0.4992,
+      "conf": 0.39
+    }
+  ],
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/09/16-15.jpg",
   "last_kite": {
     "camera": "maritime",
     "camera_label": "Maritime",
-    "timestamp": "2026-08-08T16:53:15.685719+02:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/08/16-15.jpg",
+    "timestamp": "2026-08-09T16:56:06.284322+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/09/16-15.jpg",
     "kites_detected": 1,
     "boxes": [
       {
-        "x1": 0.599,
-        "y1": 0.4664,
-        "x2": 0.6108,
-        "y2": 0.4878,
-        "conf": 0.597
+        "x1": 0.8798,
+        "y1": 0.4794,
+        "x2": 0.8888,
+        "y2": 0.4992,
+        "conf": 0.39
       }
     ]
   },
   "last_kites": [
+    {
+      "camera": "maritime",
+      "camera_label": "Maritime",
+      "timestamp": "2026-08-09T16:56:06.284322+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/09/16-15.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.8798,
+          "y1": 0.4794,
+          "x2": 0.8888,
+          "y2": 0.4992,
+          "conf": 0.39
+        }
+      ]
+    },
     {
       "camera": "maritime",
       "camera_label": "Maritime",
@@ -51,27 +80,6 @@
           "conf": 0.524
         }
       ]
-    },
-    {
-      "camera": "mer",
-      "camera_label": "La Mer",
-      "timestamp": "2026-08-06T17:32:13.062378+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/08/06/17-30.jpg",
-      "kites_detected": 1,
-      "boxes": [
-        {
-          "x1": 0.6927,
-          "y1": 0.4089,
-          "x2": 0.7081,
-          "y2": 0.4369,
-          "conf": 0.174
-        }
-      ]
     }
-  ],
-  "reason": "vent 7kt < 8kt",
-  "wind_kt": 7.0,
-  "wind_dir": 210,
-  "temp_c": 29.4,
-  "rain_mm": 0
+  ]
 }

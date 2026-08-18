@@ -3791,27 +3791,6 @@
     "temp_c": 22.1,
     "rain_mm": 0,
     "timestamp": "2026-08-18T15:14:50.444602+02:00",
-    "camera": "eole",
-    "camera_label": "Eole",
-    "kites_detected": 1,
-    "max_conf": 0.367,
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/08/18/large/15-00.jpg",
-    "boxes": [
-      {
-        "x1": 0.4522,
-        "y1": 0.3965,
-        "x2": 0.4657,
-        "y2": 0.4201,
-        "conf": 0.367
-      }
-    ]
-  },
-  {
-    "wind_kt": 16.6,
-    "wind_dir": 256,
-    "temp_c": 22.1,
-    "rain_mm": 0,
-    "timestamp": "2026-08-18T15:14:50.444602+02:00",
     "camera": "mer",
     "camera_label": "La Mer",
     "kites_detected": 2,
@@ -3831,6 +3810,27 @@
         "x2": 0.2642,
         "y2": 0.4754,
         "conf": 0.242
+      }
+    ]
+  },
+  {
+    "wind_kt": 16.3,
+    "wind_dir": 255,
+    "temp_c": 21.1,
+    "rain_mm": 0,
+    "timestamp": "2026-08-18T15:58:57.296693+02:00",
+    "camera": "eole",
+    "camera_label": "Eole",
+    "kites_detected": 1,
+    "max_conf": 0.367,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/08/18/large/15-00.jpg",
+    "boxes": [
+      {
+        "x1": 0.4522,
+        "y1": 0.3965,
+        "x2": 0.4657,
+        "y2": 0.4201,
+        "conf": 0.367
       }
     ]
   }

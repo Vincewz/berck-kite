@@ -1,38 +1,98 @@
 {
-  "timestamp": "2026-08-18T16:56:17.207220+02:00",
+  "timestamp": "2026-08-18T17:50:29.429395+02:00",
   "conditions_ok": true,
-  "wind_kt": 16.6,
-  "wind_dir": 254,
-  "temp_c": 21.1,
+  "wind_kt": 16.4,
+  "wind_dir": 253,
+  "temp_c": 21.4,
   "rain_mm": 0,
-  "kites_detected": 1,
+  "kites_detected": 4,
   "boxes": [
     {
-      "x1": 0.6279,
-      "y1": 0.4877,
-      "x2": 0.6421,
-      "y2": 0.5087,
-      "conf": 0.296
+      "x1": 0.7647,
+      "y1": 0.4347,
+      "x2": 0.7825,
+      "y2": 0.4679,
+      "conf": 0.36
+    },
+    {
+      "x1": 0.6193,
+      "y1": 0.4381,
+      "x2": 0.6325,
+      "y2": 0.4621,
+      "conf": 0.335
     }
   ],
-  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/18/16-15.jpg",
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/18/17-15.jpg",
   "last_kite": {
     "camera": "maritime",
     "camera_label": "Maritime",
-    "timestamp": "2026-08-18T16:56:17.207220+02:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/18/16-15.jpg",
-    "kites_detected": 1,
+    "timestamp": "2026-08-18T17:50:29.429395+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/18/17-15.jpg",
+    "kites_detected": 2,
     "boxes": [
       {
-        "x1": 0.6279,
-        "y1": 0.4877,
-        "x2": 0.6421,
-        "y2": 0.5087,
-        "conf": 0.296
+        "x1": 0.7647,
+        "y1": 0.4347,
+        "x2": 0.7825,
+        "y2": 0.4679,
+        "conf": 0.36
+      },
+      {
+        "x1": 0.6193,
+        "y1": 0.4381,
+        "x2": 0.6325,
+        "y2": 0.4621,
+        "conf": 0.335
       }
     ]
   },
   "last_kites": [
+    {
+      "camera": "eole",
+      "camera_label": "Eole",
+      "timestamp": "2026-08-18T17:50:29.429395+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/08/18/large/17-00.jpg",
+      "kites_detected": 2,
+      "boxes": [
+        {
+          "x1": 0.2968,
+          "y1": 0.4361,
+          "x2": 0.3071,
+          "y2": 0.4536,
+          "conf": 0.226
+        },
+        {
+          "x1": 0.4811,
+          "y1": 0.4257,
+          "x2": 0.4919,
+          "y2": 0.4447,
+          "conf": 0.212
+        }
+      ]
+    },
+    {
+      "camera": "maritime",
+      "camera_label": "Maritime",
+      "timestamp": "2026-08-18T17:50:29.429395+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/08/18/17-15.jpg",
+      "kites_detected": 2,
+      "boxes": [
+        {
+          "x1": 0.7647,
+          "y1": 0.4347,
+          "x2": 0.7825,
+          "y2": 0.4679,
+          "conf": 0.36
+        },
+        {
+          "x1": 0.6193,
+          "y1": 0.4381,
+          "x2": 0.6325,
+          "y2": 0.4621,
+          "conf": 0.335
+        }
+      ]
+    },
     {
       "camera": "maritime",
       "camera_label": "Maritime",
@@ -46,45 +106,6 @@
           "x2": 0.6421,
           "y2": 0.5087,
           "conf": 0.296
-        }
-      ]
-    },
-    {
-      "camera": "eole",
-      "camera_label": "Eole",
-      "timestamp": "2026-08-18T15:58:57.296693+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/08/18/large/15-00.jpg",
-      "kites_detected": 1,
-      "boxes": [
-        {
-          "x1": 0.4522,
-          "y1": 0.3965,
-          "x2": 0.4657,
-          "y2": 0.4201,
-          "conf": 0.367
-        }
-      ]
-    },
-    {
-      "camera": "mer",
-      "camera_label": "La Mer",
-      "timestamp": "2026-08-18T15:14:50.444602+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/08/18/14-30.jpg",
-      "kites_detected": 2,
-      "boxes": [
-        {
-          "x1": 0.283,
-          "y1": 0.3959,
-          "x2": 0.2988,
-          "y2": 0.4214,
-          "conf": 0.633
-        },
-        {
-          "x1": 0.2518,
-          "y1": 0.4475,
-          "x2": 0.2642,
-          "y2": 0.4754,
-          "conf": 0.242
         }
       ]
     }

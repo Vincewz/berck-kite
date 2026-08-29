@@ -4507,11 +4507,11 @@
     ]
   },
   {
-    "wind_kt": 16.4,
-    "wind_dir": 191,
-    "temp_c": 21.0,
-    "rain_mm": 0,
-    "timestamp": "2026-08-29T16:31:36.713894+02:00",
+    "wind_kt": 15.5,
+    "wind_dir": 192,
+    "temp_c": 21.4,
+    "rain_mm": 0.2,
+    "timestamp": "2026-08-29T17:07:24.331250+02:00",
     "camera": "maritime",
     "camera_label": "Maritime",
     "kites_detected": 1,
@@ -4528,11 +4528,11 @@
     ]
   },
   {
-    "wind_kt": 16.4,
-    "wind_dir": 191,
-    "temp_c": 21.0,
-    "rain_mm": 0,
-    "timestamp": "2026-08-29T16:31:36.713894+02:00",
+    "wind_kt": 15.5,
+    "wind_dir": 192,
+    "temp_c": 21.4,
+    "rain_mm": 0.2,
+    "timestamp": "2026-08-29T17:07:24.331250+02:00",
     "camera": "mer",
     "camera_label": "La Mer",
     "kites_detected": 9,

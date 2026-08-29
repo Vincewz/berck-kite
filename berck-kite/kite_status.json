@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-08-29T19:45:32.359815+02:00",
+  "timestamp": "2026-08-29T20:38:01.103592+02:00",
   "conditions_ok": true,
-  "wind_kt": 23.4,
-  "wind_dir": 237,
-  "temp_c": 20.8,
+  "wind_kt": 24.4,
+  "wind_dir": 234,
+  "temp_c": 20.2,
   "rain_mm": 0,
   "kites_detected": 0,
   "boxes": [

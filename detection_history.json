@@ -4941,11 +4941,11 @@
     ]
   },
   {
-    "wind_kt": 9.3,
-    "wind_dir": 260,
-    "temp_c": 19.8,
+    "wind_kt": 9.4,
+    "wind_dir": 261,
+    "temp_c": 19.7,
     "rain_mm": 0,
-    "timestamp": "2026-09-01T16:11:09.964546+02:00",
+    "timestamp": "2026-09-01T16:58:10.175966+02:00",
     "camera": "eole",
     "camera_label": "Eole",
     "kites_detected": 1,

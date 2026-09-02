@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-09-02T16:33:32.311755+02:00",
+  "timestamp": "2026-09-02T17:08:29.978725+02:00",
   "conditions_ok": true,
-  "wind_kt": 9.7,
+  "wind_kt": 9.3,
   "wind_dir": 237,
   "temp_c": 20.5,
   "rain_mm": 0,
@@ -19,7 +19,7 @@
   "last_kite": {
     "camera": "mer",
     "camera_label": "La Mer",
-    "timestamp": "2026-09-02T16:33:32.311755+02:00",
+    "timestamp": "2026-09-02T17:08:29.978725+02:00",
     "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/09/02/16-30.jpg",
     "kites_detected": 1,
     "boxes": [
@@ -36,7 +36,7 @@
     {
       "camera": "mer",
       "camera_label": "La Mer",
-      "timestamp": "2026-09-02T16:33:32.311755+02:00",
+      "timestamp": "2026-09-02T17:08:29.978725+02:00",
       "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/09/02/16-30.jpg",
       "kites_detected": 1,
       "boxes": [

@@ -5450,5 +5450,82 @@
         "conf": 0.634
       }
     ]
+  },
+  {
+    "wind_kt": 12.6,
+    "wind_dir": 238,
+    "temp_c": 20.5,
+    "rain_mm": 0,
+    "timestamp": "2026-09-03T20:44:52.628666+02:00",
+    "camera": "eole",
+    "camera_label": "Eole",
+    "kites_detected": 3,
+    "max_conf": 0.811,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/03/large/20-00.jpg",
+    "boxes": [
+      {
+        "x1": 0.3106,
+        "y1": 0.4364,
+        "x2": 0.3191,
+        "y2": 0.4546,
+        "conf": 0.811
+      },
+      {
+        "x1": 0.2215,
+        "y1": 0.4438,
+        "x2": 0.2314,
+        "y2": 0.4612,
+        "conf": 0.457
+      },
+      {
+        "x1": 0.3062,
+        "y1": 0.4314,
+        "x2": 0.3187,
+        "y2": 0.4476,
+        "conf": 0.203
+      }
+    ]
+  },
+  {
+    "wind_kt": 12.6,
+    "wind_dir": 238,
+    "temp_c": 20.5,
+    "rain_mm": 0,
+    "timestamp": "2026-09-03T20:44:52.628666+02:00",
+    "camera": "maritime",
+    "camera_label": "Maritime",
+    "kites_detected": 1,
+    "max_conf": 0.326,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/03/20-15.jpg",
+    "boxes": [
+      {
+        "x1": 0.9241,
+        "y1": 0.4414,
+        "x2": 0.9423,
+        "y2": 0.4693,
+        "conf": 0.326
+      }
+    ]
+  },
+  {
+    "wind_kt": 12.6,
+    "wind_dir": 238,
+    "temp_c": 20.5,
+    "rain_mm": 0,
+    "timestamp": "2026-09-03T20:44:52.628666+02:00",
+    "camera": "mer",
+    "camera_label": "La Mer",
+    "kites_detected": 1,
+    "max_conf": 0.172,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/09/03/20-30.jpg",
+    "boxes": [
+      {
+        "x1": 0.363,
+        "y1": 0.4438,
+        "x2": 0.3703,
+        "y2": 0.4604,
+        "conf": 0.172
+      }
+    ]
   }
 ]

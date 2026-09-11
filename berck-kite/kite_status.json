@@ -1,52 +1,91 @@
 {
-  "timestamp": "2026-09-11T15:38:00.499940+02:00",
+  "timestamp": "2026-09-11T16:29:41.308978+02:00",
   "conditions_ok": true,
-  "wind_kt": 9.4,
-  "wind_dir": 277,
-  "temp_c": 20.0,
+  "wind_kt": 8.6,
+  "wind_dir": 275,
+  "temp_c": 20.1,
   "rain_mm": 0,
-  "kites_detected": 2,
+  "kites_detected": 3,
   "boxes": [
     {
-      "x1": 0.5081,
-      "y1": 0.3555,
-      "x2": 0.5208,
-      "y2": 0.3795,
-      "conf": 0.223
+      "x1": 0.9011,
+      "y1": 0.5227,
+      "x2": 0.9121,
+      "y2": 0.5433,
+      "conf": 0.284
     },
     {
-      "x1": 0.6182,
-      "y1": 0.4098,
-      "x2": 0.631,
-      "y2": 0.4354,
-      "conf": 0.183
+      "x1": 0.706,
+      "y1": 0.4473,
+      "x2": 0.7223,
+      "y2": 0.4757,
+      "conf": 0.169
     }
   ],
-  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/11/large/15-00.jpg",
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/11/16-15.jpg",
   "last_kite": {
-    "camera": "eole",
-    "camera_label": "Eole",
-    "timestamp": "2026-09-11T15:38:00.499940+02:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/11/large/15-00.jpg",
+    "camera": "maritime",
+    "camera_label": "Maritime",
+    "timestamp": "2026-09-11T16:29:41.308978+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/11/16-15.jpg",
     "kites_detected": 2,
     "boxes": [
       {
-        "x1": 0.5081,
-        "y1": 0.3555,
-        "x2": 0.5208,
-        "y2": 0.3795,
-        "conf": 0.223
+        "x1": 0.9011,
+        "y1": 0.5227,
+        "x2": 0.9121,
+        "y2": 0.5433,
+        "conf": 0.284
       },
       {
-        "x1": 0.6182,
-        "y1": 0.4098,
-        "x2": 0.631,
-        "y2": 0.4354,
-        "conf": 0.183
+        "x1": 0.706,
+        "y1": 0.4473,
+        "x2": 0.7223,
+        "y2": 0.4757,
+        "conf": 0.169
       }
     ]
   },
   "last_kites": [
+    {
+      "camera": "eole",
+      "camera_label": "Eole",
+      "timestamp": "2026-09-11T16:29:41.308978+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/11/large/16-00.jpg",
+      "kites_detected": 1,
+      "boxes": [
+        {
+          "x1": 0.7772,
+          "y1": 0.4334,
+          "x2": 0.7873,
+          "y2": 0.4512,
+          "conf": 0.238
+        }
+      ]
+    },
+    {
+      "camera": "maritime",
+      "camera_label": "Maritime",
+      "timestamp": "2026-09-11T16:29:41.308978+02:00",
+      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/11/16-15.jpg",
+      "kites_detected": 2,
+      "boxes": [
+        {
+          "x1": 0.9011,
+          "y1": 0.5227,
+          "x2": 0.9121,
+          "y2": 0.5433,
+          "conf": 0.284
+        },
+        {
+          "x1": 0.706,
+          "y1": 0.4473,
+          "x2": 0.7223,
+          "y2": 0.4757,
+          "conf": 0.169
+        }
+      ]
+    },
     {
       "camera": "eole",
       "camera_label": "Eole",
@@ -67,38 +106,6 @@
           "x2": 0.631,
           "y2": 0.4354,
           "conf": 0.183
-        }
-      ]
-    },
-    {
-      "camera": "eole",
-      "camera_label": "Eole",
-      "timestamp": "2026-09-11T14:52:55.279611+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/11/large/14-00.jpg",
-      "kites_detected": 1,
-      "boxes": [
-        {
-          "x1": 0.8834,
-          "y1": 0.4153,
-          "x2": 0.8956,
-          "y2": 0.4366,
-          "conf": 0.347
-        }
-      ]
-    },
-    {
-      "camera": "mer",
-      "camera_label": "La Mer",
-      "timestamp": "2026-09-11T14:52:55.279611+02:00",
-      "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/09/11/14-30.jpg",
-      "kites_detected": 1,
-      "boxes": [
-        {
-          "x1": 0.2217,
-          "y1": 0.4157,
-          "x2": 0.2343,
-          "y2": 0.4384,
-          "conf": 0.194
         }
       ]
     }

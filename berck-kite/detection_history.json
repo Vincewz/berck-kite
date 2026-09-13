@@ -6929,11 +6929,11 @@
     ]
   },
   {
-    "wind_kt": 9.9,
-    "wind_dir": 259,
-    "temp_c": 19.3,
+    "wind_kt": 9.5,
+    "wind_dir": 255,
+    "temp_c": 19.2,
     "rain_mm": 0,
-    "timestamp": "2026-09-13T18:59:17.019235+02:00",
+    "timestamp": "2026-09-13T19:27:15.041912+02:00",
     "camera": "mer",
     "camera_label": "La Mer",
     "kites_detected": 1,

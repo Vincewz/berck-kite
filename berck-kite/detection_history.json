@@ -8089,5 +8089,103 @@
         "conf": 0.264
       }
     ]
+  },
+  {
+    "wind_kt": 16.4,
+    "wind_dir": 246,
+    "temp_c": 19.9,
+    "rain_mm": 0,
+    "timestamp": "2026-09-19T17:58:10.172958+02:00",
+    "camera": "eole",
+    "camera_label": "Eole",
+    "kites_detected": 4,
+    "max_conf": 0.796,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/19/large/17-00.jpg",
+    "boxes": [
+      {
+        "x1": 0.8345,
+        "y1": 0.428,
+        "x2": 0.8482,
+        "y2": 0.4519,
+        "conf": 0.796
+      },
+      {
+        "x1": 0.1921,
+        "y1": 0.4294,
+        "x2": 0.1994,
+        "y2": 0.4449,
+        "conf": 0.297
+      },
+      {
+        "x1": 0.2961,
+        "y1": 0.4315,
+        "x2": 0.3063,
+        "y2": 0.4445,
+        "conf": 0.224
+      },
+      {
+        "x1": 0.1617,
+        "y1": 0.4322,
+        "x2": 0.1695,
+        "y2": 0.4454,
+        "conf": 0.163
+      }
+    ]
+  },
+  {
+    "wind_kt": 16.4,
+    "wind_dir": 246,
+    "temp_c": 19.9,
+    "rain_mm": 0,
+    "timestamp": "2026-09-19T17:58:10.172958+02:00",
+    "camera": "maritime",
+    "camera_label": "Maritime",
+    "kites_detected": 2,
+    "max_conf": 0.708,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/19/17-15.jpg",
+    "boxes": [
+      {
+        "x1": 0.7958,
+        "y1": 0.4742,
+        "x2": 0.8083,
+        "y2": 0.4982,
+        "conf": 0.708
+      },
+      {
+        "x1": 0.6463,
+        "y1": 0.4652,
+        "x2": 0.658,
+        "y2": 0.4856,
+        "conf": 0.628
+      }
+    ]
+  },
+  {
+    "wind_kt": 16.4,
+    "wind_dir": 246,
+    "temp_c": 19.9,
+    "rain_mm": 0,
+    "timestamp": "2026-09-19T17:58:10.172958+02:00",
+    "camera": "mer",
+    "camera_label": "La Mer",
+    "kites_detected": 2,
+    "max_conf": 0.155,
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/mer/2026/09/19/17-30.jpg",
+    "boxes": [
+      {
+        "x1": 0.9832,
+        "y1": 0.4269,
+        "x2": 0.9983,
+        "y2": 0.4541,
+        "conf": 0.155
+      },
+      {
+        "x1": 0.3251,
+        "y1": 0.4427,
+        "x2": 0.3359,
+        "y2": 0.4601,
+        "conf": 0.155
+      }
+    ]
   }
 ]

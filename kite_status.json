@@ -1,34 +1,48 @@
 {
-  "timestamp": "2026-09-20T15:05:51.256099+02:00",
+  "timestamp": "2026-09-20T15:36:42.075164+02:00",
   "conditions_ok": true,
-  "wind_kt": 8.2,
-  "wind_dir": 301,
-  "temp_c": 18.8,
+  "wind_kt": 8.3,
+  "wind_dir": 289,
+  "temp_c": 19.3,
   "rain_mm": 0,
-  "kites_detected": 3,
+  "kites_detected": 2,
   "boxes": [
     {
-      "x1": 0.5246,
-      "y1": 0.4696,
-      "x2": 0.5361,
-      "y2": 0.4893,
-      "conf": 0.568
+      "x1": 0.4021,
+      "y1": 0.4285,
+      "x2": 0.4094,
+      "y2": 0.4451,
+      "conf": 0.328
+    },
+    {
+      "x1": 0.4232,
+      "y1": 0.4432,
+      "x2": 0.4325,
+      "y2": 0.4624,
+      "conf": 0.178
     }
   ],
-  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/20/14-15.jpg",
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/20/large/15-00.jpg",
   "last_kite": {
-    "camera": "maritime",
-    "camera_label": "Maritime",
-    "timestamp": "2026-09-20T15:05:51.256099+02:00",
-    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/maritime/2026/09/20/14-15.jpg",
-    "kites_detected": 1,
+    "camera": "eole",
+    "camera_label": "Eole",
+    "timestamp": "2026-09-20T15:36:42.075164+02:00",
+    "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/20/large/15-00.jpg",
+    "kites_detected": 2,
     "boxes": [
       {
-        "x1": 0.5246,
-        "y1": 0.4696,
-        "x2": 0.5361,
-        "y2": 0.4893,
-        "conf": 0.568
+        "x1": 0.4021,
+        "y1": 0.4285,
+        "x2": 0.4094,
+        "y2": 0.4451,
+        "conf": 0.328
+      },
+      {
+        "x1": 0.4232,
+        "y1": 0.4432,
+        "x2": 0.4325,
+        "y2": 0.4624,
+        "conf": 0.178
       }
     ]
   },
@@ -36,7 +50,7 @@
     {
       "camera": "eole",
       "camera_label": "Eole",
-      "timestamp": "2026-09-20T15:05:51.256099+02:00",
+      "timestamp": "2026-09-20T15:36:42.075164+02:00",
       "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/09/20/large/15-00.jpg",
       "kites_detected": 2,
       "boxes": [

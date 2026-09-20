@@ -68,8 +68,11 @@ def save_first_available(camera, dt, kt, deg):
 
 
 now = now_paris()
-start = (now - timedelta(days=DAYS_BACK)).strftime("%Y-%m-%d")
-end = now.strftime("%Y-%m-%d")
+# L'API archive ne publie pas systématiquement la journée courante. La collecte
+# nocturne demande donc uniquement des journées complètes, jusqu'à hier.
+last_complete_day = now - timedelta(days=1)
+start = (last_complete_day - timedelta(days=DAYS_BACK - 1)).strftime("%Y-%m-%d")
+end = last_complete_day.strftime("%Y-%m-%d")
 
 print(f"Fetch meteo {start} -> {end}...")
 payload = archive_weather_payload(start, end)

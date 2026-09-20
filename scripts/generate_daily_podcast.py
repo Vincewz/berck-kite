@@ -1,14 +1,14 @@
 """
 generate_daily_podcast.py — Lancé chaque matin par GitHub Actions
-Données riches → Mistral contexte maximal → OpenAI TTS onyx → ffmpeg mastering
+Données riches → Gemini Flash → OpenAI TTS onyx → ffmpeg mastering
 """
 
 import os, json, subprocess, requests
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
-MISTRAL_KEY = os.environ["MISTRAL_API_KEY"]
-OPENAI_KEY  = os.environ["OPENAI_API_KEY"]
+GEMINI_KEY = os.environ["GEMINI_API_KEY"]
+OPENAI_KEY = os.environ["OPENAI_API_KEY"]
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 
 BASE          = Path(__file__).parent.parent
@@ -216,7 +216,7 @@ def load_kite_yesterday(today: datetime) -> dict | None:
             return entry
     return None
 
-# ── 2. Mistral — contexte maximal, script naturel ────────────────────────────
+# ── 2. Gemini Flash — script naturel ─────────────────────────────────────────
 SYSTEM_PROMPT = """Tu es la voix du bulletin météo kite de Berck-sur-Mer, diffusé chaque matin sur une web radio locale.
 Ton rôle : énoncer les conditions météo et kite de la journée de façon claire, précise et agréable à écouter.
 
@@ -292,20 +292,29 @@ DEMAIN :
 Rédige le bulletin maintenant :"""
 
     r = requests.post(
-        "https://api.mistral.ai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {MISTRAL_KEY}", "Content-Type": "application/json"},
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        "gemini-2.5-flash-lite:generateContent",
+        headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
         json={
-            "model": "mistral-small-latest",
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user",   "content": user_msg},
-            ],
-            "max_tokens": 350,
-            "temperature": 0.75,
+            "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+            "contents": [{"role": "user", "parts": [{"text": user_msg}]}],
+            "generationConfig": {
+                "maxOutputTokens": 350,
+                "temperature": 0.75,
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
         },
         timeout=25,
     )
-    text = r.json()["choices"][0]["message"]["content"].strip()
+    try:
+        r.raise_for_status()
+        payload = r.json()
+        text = payload["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as exc:
+        detail = r.text[:500].replace("\n", " ")
+        raise RuntimeError(
+            f"Gemini API invalide ({r.status_code}): {detail}"
+        ) from exc
     # Nettoyer les éventuels artefacts markdown
     import re
     text = re.sub(r'\*+', '', text)
@@ -409,7 +418,7 @@ if __name__ == "__main__":
     else:
         print("  Pas de détection kite confiante hier")
 
-    print("\nScript Mistral...")
+    print("\nScript Gemini...")
     script = generate_script(data, date_str, kite_yesterday)
     print(f"\n--- SCRIPT ({len(script.split())} mots) ---\n{script}\n---\n")
     (BASE / "podcast" / "tts" / "script.txt").write_text(script, encoding="utf-8")

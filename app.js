@@ -377,7 +377,15 @@ createApp({
         const r = await fetch('/kite_status.json?t=' + Math.floor(Date.now() / 3_600_000));
         if (!r.ok) return;
         const data = await r.json();
-        if (data.last_kite) lastKite.value = data.last_kite;
+        const confidentBoxes = boxes => Array.isArray(boxes)
+          ? boxes.filter(box => Number(box?.conf || 0) >= 0.5)
+          : [];
+        if (data.last_kite) {
+          const boxes = confidentBoxes(data.last_kite.boxes);
+          lastKite.value = boxes.length ? { ...data.last_kite, boxes, kites_detected: boxes.length } : null;
+        }
+        data.boxes = confidentBoxes(data.boxes);
+        data.kites_detected = data.boxes.length;
         if (!data.timestamp) return;
         const ts = new Date(data.timestamp);
         const today = new Date();

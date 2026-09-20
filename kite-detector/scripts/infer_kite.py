@@ -176,10 +176,13 @@ def iou(a, b):
     return inter / union if union > 0 else 0
 
 
+MIN_DISPLAY_CONF = 0.5
+
+
 def detect_boxes(img_path, models):
     detections = []
     for model in models:
-        res = model(str(img_path), conf=0.15, iou=0.5, verbose=False)[0]
+        res = model(str(img_path), conf=MIN_DISPLAY_CONF, iou=0.5, verbose=False)[0]
         for box in res.boxes:
             x1, y1, x2, y2 = box.xyxyn[0].tolist()
             detections.append((x1, y1, x2, y2, float(box.conf[0])))
@@ -231,7 +234,7 @@ if not conditions["ok"]:
     ))
     sys.exit(0)
 
-print("Inference YOLO (ensemble v1+v5 conf=0.15) sur les webcams...")
+print(f"Inference YOLO (ensemble v1+v5 conf>={MIN_DISPLAY_CONF:.2f}) sur les webcams...")
 from ultralytics import YOLO  # imported only when conditions allow inference
 
 models = [YOLO(str(MODEL_PATH))]

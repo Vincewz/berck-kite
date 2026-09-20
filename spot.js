@@ -92,6 +92,14 @@ createApp({
       return [...cams.value].sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
     });
 
+    const MIN_KITE_CONF = 0.5;
+
+    function confidentBoxes(kite) {
+      return Array.isArray(kite?.boxes)
+        ? kite.boxes.filter(box => Number(box?.conf || 0) >= MIN_KITE_CONF)
+        : [];
+    }
+
     function normalizeStatusKites(data, historyItems = []) {
       const entries = [];
       if (Array.isArray(data?.last_kites)) entries.push(...data.last_kites);
@@ -99,23 +107,23 @@ createApp({
       if (Array.isArray(historyItems)) entries.push(...historyItems);
       const boxesByImage = new Map();
       entries.forEach(kite => {
-        if (kite?.image_url && Array.isArray(kite.boxes) && kite.boxes.length) {
-          boxesByImage.set(kite.image_url, kite.boxes);
+        const boxes = confidentBoxes(kite);
+        if (kite?.image_url && boxes.length) {
+          boxesByImage.set(kite.image_url, boxes);
         }
       });
       const seen = new Set();
       return entries
         .filter(kite => kite?.timestamp && kite?.image_url)
         .map(kite => {
-          const boxes = Array.isArray(kite.boxes) && kite.boxes.length
-            ? kite.boxes
-            : (boxesByImage.get(kite.image_url) || []);
+          const ownBoxes = confidentBoxes(kite);
+          const boxes = ownBoxes.length ? ownBoxes : (boxesByImage.get(kite.image_url) || []);
           return {
             ...kite,
             camera: kite.camera || cameraFromUrl(kite.image_url),
             camera_label: kite.camera_label || cameraLabel(kite.camera || cameraFromUrl(kite.image_url)),
             boxes,
-            kites_detected: Math.max(Number(kite.kites_detected || 0), boxes.length),
+            kites_detected: boxes.length,
             image_error: false,
           };
         })
@@ -173,20 +181,28 @@ createApp({
     const events = computed(() => {
       const fromHistory = history.value
         .filter(e => e && e.timestamp)
-        .map(e => ({
-          ...e,
-          camera_label: e.camera_label || cameraLabel(e.camera),
-          kites_detected: Number(e.kites_detected || 0),
-        }));
+        .map(e => {
+          const boxes = confidentBoxes(e);
+          return {
+            ...e,
+            boxes,
+            camera_label: e.camera_label || cameraLabel(e.camera),
+            kites_detected: boxes.length,
+          };
+        });
       const known = new Set(fromHistory.map(e => `${e.timestamp}|${e.camera || ''}`));
       const fromStatus = lastKites.value
         .filter(e => e && e.timestamp)
         .filter(e => !known.has(`${e.timestamp}|${e.camera || ''}`))
-        .map(e => ({
-          ...e,
-          camera_label: e.camera_label || cameraLabel(e.camera),
-          kites_detected: Number(e.kites_detected || 0),
-        }));
+        .map(e => {
+          const boxes = confidentBoxes(e);
+          return {
+            ...e,
+            boxes,
+            camera_label: e.camera_label || cameraLabel(e.camera),
+            kites_detected: boxes.length,
+          };
+        });
       return [...fromHistory, ...fromStatus]
         .filter(e => e.kites_detected > 0)
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));

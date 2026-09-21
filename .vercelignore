@@ -1,0 +1,27 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Fichiers exclus des déploiements Vercel.
+#
+# Le dépôt embarque le dataset d'entraînement YOLO (~110 Mo) et les sources
+# audio du podcast : rien de tout cela n'est servi par le site. Sans ce fichier,
+# chaque déploiement pesait ~127 Mo, ce qui faisait exploser le stockage des
+# déploiements à chaque commit du bot (plusieurs par jour).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Dataset, modèles et scripts d'entraînement (jamais servis)
+kite-detector/
+
+# Outillage : utilisé par GitHub Actions, pas par le site
+scripts/
+.github/
+README.md
+
+# Sources audio du podcast — seuls today.mp3 et today.mp4 sont servis
+podcast/tts/
+podcast/voice_tests/
+podcast/jingle_bg.mp3
+
+# Artefacts locaux
+__pycache__/
+*.pyc
+.venv/
+venv/

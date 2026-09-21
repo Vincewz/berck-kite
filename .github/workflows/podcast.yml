@@ -48,7 +48,7 @@ jobs:
         run: |
           git config user.name "KiteBerck Bot"
           git config user.email "bot@berck.info"
-          git add podcast/today.mp3 podcast/today.mp4 podcast/video_frames/manifest.json podcast/tts/
+          git add podcast/today.mp3 podcast/today.mp4 podcast/video_frames/manifest.json podcast/tts/script.txt
           git diff --cached --quiet || git commit -m "Podcast $(date +'%Y-%m-%d')"
           git pull --rebase origin main
           git push

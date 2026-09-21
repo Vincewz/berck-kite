@@ -3,3 +3,11 @@ podcast/static/
 podcast/full_audio.mp3
 podcast/jingle_intro.mp3
 podcast/bg_music_new.mp3
+
+# Piste vocale brute, régénérée à chaque run (3 Mo/jour dans l'historique git).
+# Seuls today.mp3 et today.mp4 sont publiés.
+podcast/tts/voice_raw.wav
+
+# Cadres vidéo intermédiaires, régénérés à chaque run
+podcast/video_frames/*.jpg
+podcast/video_frames/subtitles.ass

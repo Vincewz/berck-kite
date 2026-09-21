@@ -301,7 +301,6 @@ Rédige le bulletin maintenant :"""
             "generationConfig": {
                 "maxOutputTokens": 350,
                 "temperature": 0.75,
-                "thinkingConfig": {"thinkingBudget": 0},
             },
         },
         timeout=25,

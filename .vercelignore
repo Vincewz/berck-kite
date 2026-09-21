@@ -7,6 +7,9 @@
 # déploiements à chaque commit du bot (plusieurs par jour).
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Historique Git : jamais nécessaire au déploiement
+.git/
+
 # Dataset, modèles et scripts d'entraînement (jamais servis)
 kite-detector/
 

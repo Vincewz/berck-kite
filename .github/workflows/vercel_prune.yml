@@ -1,0 +1,31 @@
+name: Purge déploiements Vercel
+
+# Le stockage des déploiements Vercel additionne tous les déploiements conservés.
+# Comme le bot commite plusieurs fois par jour (~8 déploiements quotidiens), ce
+# ménage hebdomadaire garde les plus récents et supprime les autres.
+on:
+  schedule:
+    - cron: '0 4 * * 0'   # dimanche 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Purger les anciens déploiements
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "Secret VERCEL_TOKEN absent - purge ignoree."
+            exit 0
+          fi
+          python scripts/vercel_prune_deployments.py \
+            --project berck-kite --keep 5 --yes

@@ -293,7 +293,7 @@ Rédige le bulletin maintenant :"""
 
     r = requests.post(
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        "gemini-2.5-flash-lite:generateContent",
+        "gemini-3.5-flash-lite:generateContent",
         headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
         json={
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},

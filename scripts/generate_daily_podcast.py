@@ -1,20 +1,19 @@
 """
 generate_daily_podcast.py — Lancé chaque matin par GitHub Actions
-Données riches → Gemini Flash → OpenAI TTS onyx → ffmpeg mastering
+Données riches → Gemini Flash → Gemini TTS → ffmpeg mastering
 """
 
-import os, json, subprocess, requests
+import os, json, subprocess, requests, base64, wave
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 GEMINI_KEY = os.environ["GEMINI_API_KEY"]
-OPENAI_KEY = os.environ["OPENAI_API_KEY"]
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 
 BASE          = Path(__file__).parent.parent
 JINGLE        = BASE / "podcast" / "jingle_bg.mp3"
 OUT_FILE      = BASE / "podcast" / "today.mp3"
-TTS_RAW       = BASE / "podcast" / "tts" / "voice_raw.mp3"
+TTS_RAW       = BASE / "podcast" / "tts" / "voice_raw.wav"
 HISTORY_FILE  = BASE / "detection_history.json"
 TTS_RAW.parent.mkdir(exist_ok=True)
 
@@ -321,37 +320,46 @@ Rédige le bulletin maintenant :"""
     text = re.sub(r'\n{3,}', '\n\n', text).strip()
     return text
 
-# ── 3. OpenAI TTS ─────────────────────────────────────────────────────────────
+# ── 3. Gemini TTS ─────────────────────────────────────────────────────────────
 def text_to_speech(script: str, out_path: Path) -> str:
-    # Essai 1 : gpt-4o-mini-tts avec instructions accent français
+    prompt = (
+        "Lis exactement le bulletin suivant en français de France, avec une voix "
+        "naturelle de présentateur radio, un débit posé et un ton neutre. "
+        "N'ajoute et ne retire aucun mot.\n\n" + script
+    )
     r = requests.post(
-        "https://api.openai.com/v1/audio/speech",
-        headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        "gemini-3.1-flash-tts-preview:generateContent",
+        headers={"x-goog-api-key": GEMINI_KEY, "Content-Type": "application/json"},
         json={
-            "model": "gpt-4o-mini-tts",
-            "voice": "onyx",
-            "input": script,
-            "instructions": "Tu parles français avec un accent français natif, parfaitement naturel. Prononce tous les mots en français. Débit posé, ton neutre de présentateur radio.",
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "responseModalities": ["AUDIO"],
+                "speechConfig": {
+                    "voiceConfig": {
+                        "prebuiltVoiceConfig": {"voiceName": "Kore"}
+                    }
+                },
+            },
         },
-        timeout=60,
+        timeout=90,
     )
-    if r.status_code == 200:
-        out_path.write_bytes(r.content)
-        print(f"  gpt-4o-mini-tts onyx OK — {len(r.content)//1024}KB")
-        return "onyx"
-    # Fallback : tts-1-hd
-    print(f"  gpt-4o-mini-tts echec {r.status_code}, fallback tts-1-hd")
-    r = requests.post(
-        "https://api.openai.com/v1/audio/speech",
-        headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
-        json={"model": "tts-1-hd", "voice": "onyx", "input": script},
-        timeout=60,
-    )
-    if r.status_code == 200:
-        out_path.write_bytes(r.content)
-        print(f"  tts-1-hd onyx OK — {len(r.content)//1024}KB")
-        return "onyx"
-    raise RuntimeError(f"OpenAI TTS echec {r.status_code}: {r.text[:100]}")
+    try:
+        r.raise_for_status()
+        payload = r.json()
+        part = payload["candidates"][0]["content"]["parts"][0]
+        pcm = base64.b64decode(part["inlineData"]["data"])
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as exc:
+        detail = r.text[:500].replace("\n", " ")
+        raise RuntimeError(f"Gemini TTS invalide ({r.status_code}): {detail}") from exc
+
+    with wave.open(str(out_path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(24000)
+        wav.writeframes(pcm)
+    print(f"  Gemini TTS Kore OK — {len(pcm)//1024}KB PCM")
+    return "Kore"
 
 # ── 4. ffmpeg — mastering radio + mix musique ────────────────────────────────
 def mix_audio(voice_path: Path, music_path: Path, output: Path):
@@ -422,7 +430,7 @@ if __name__ == "__main__":
     print(f"\n--- SCRIPT ({len(script.split())} mots) ---\n{script}\n---\n")
     (BASE / "podcast" / "tts" / "script.txt").write_text(script, encoding="utf-8")
 
-    print("TTS OpenAI...")
+    print("TTS Gemini...")
     voice = text_to_speech(script, TTS_RAW)
 
     print("\nMix ffmpeg + mastering...")

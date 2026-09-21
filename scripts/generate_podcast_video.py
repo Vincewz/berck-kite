@@ -144,17 +144,41 @@ def round_to_quarter(dt: datetime) -> datetime:
     return rounded.replace(minute=minute)
 
 
-def candidate_times(sunrise: datetime) -> list[datetime]:
+def candidate_times(sunrise: datetime, now: datetime | None = None) -> list[datetime]:
+    """Créneaux du jour à essayer, autour du lever du soleil puis en repli.
+
+    Toutes les dates retournées restent celles du jour courant : la vidéo ne
+    doit jamais mélanger des photos d'une autre journée.
+    """
     anchor = round_to_quarter(sunrise)
     offsets = [0, -15, 15, -30, 30, -45, 45, -60, 60, -90, 90]
     seen = set()
     candidates = []
-    for minutes in offsets:
-        dt = anchor + timedelta(minutes=minutes)
+
+    def add(dt: datetime) -> None:
         key = dt.strftime("%Y%m%d%H%M")
         if key not in seen:
             seen.add(key)
             candidates.append(dt)
+
+    for minutes in offsets:
+        add(anchor + timedelta(minutes=minutes))
+
+    # Repli : si l'archive du lever n'est pas encore publiée, on cherche les
+    # heures déjà écoulées du jour, de la plus récente à la plus ancienne.
+    if now is not None and now.date() == sunrise.date():
+        latest = round_to_quarter(now - timedelta(minutes=30))
+        hour = latest.replace(minute=0, second=0, microsecond=0)
+        floor = sunrise.replace(hour=5, minute=0, second=0, microsecond=0)
+        added = 0
+        while hour >= floor and added < 8:
+            for minutes in (0, 45, 30, 15):
+                slot = hour + timedelta(minutes=minutes)
+                if slot <= latest and added < 8:
+                    before = len(candidates)
+                    add(slot)
+                    added += len(candidates) - before
+            hour -= timedelta(hours=1)
     return candidates
 
 
@@ -262,10 +286,15 @@ def enhance_image(path: Path) -> bool:
         enhanced.unlink(missing_ok=True)
 
 
-def fetch_frame(camera: dict, sunrise: datetime) -> dict | None:
+def fetch_frame(camera: dict, sunrise: datetime, now: datetime) -> dict | None:
+    """Récupère une image d'archive du jour pour cette caméra.
+
+    Aucune image statique n'est utilisée : une caméra sans photo du jour est
+    écartée de la vidéo plutôt que remplacée par un cliché périmé.
+    """
     slug = camera["slug"]
     out = FRAME_DIR / f"{slug}.jpg"
-    for dt in candidate_times(sunrise):
+    for dt in candidate_times(sunrise, now):
         for url in image_urls(slug, dt):
             try:
                 response = requests.get(url, timeout=12)
@@ -285,21 +314,6 @@ def fetch_frame(camera: dict, sunrise: datetime) -> dict | None:
             except requests.RequestException:
                 pass
             time.sleep(0.03)
-
-    fallback = BASE / "cams" / f"{slug}.jpg"
-    if fallback.exists() and fallback.stat().st_size > 5_000:
-        out.write_bytes(fallback.read_bytes())
-        normalize_image(out)
-        enhanced = enhance_image(out)
-        return {
-            "camera": slug,
-            "label": camera["label"],
-            "source": "local_fallback",
-            "enhanced": enhanced,
-            "url": str(fallback.relative_to(BASE)).replace("\\", "/"),
-            "captured_at": None,
-            "path": str(out.relative_to(BASE)).replace("\\", "/"),
-        }
     return None
 
 
@@ -468,13 +482,25 @@ def main() -> None:
     frames = []
 
     print(f"Sunrise reference: {sunrise.strftime('%Y-%m-%d %H:%M %Z')}")
+    missing = []
     for camera in CAMERAS:
-        frame = fetch_frame(camera, sunrise)
+        frame = fetch_frame(camera, sunrise, now)
         if frame:
             frames.append(frame)
-            print(f"  OK {camera['slug']}: {frame['source']} {frame['captured_at'] or frame['url']}")
+            print(f"  OK {camera['slug']}: {frame['source']} {frame['captured_at']}")
         else:
-            print(f"  -- {camera['slug']}: no image available")
+            missing.append(camera["slug"])
+            print(f"  -- {camera['slug']}: aucune image du jour disponible")
+
+    if not frames:
+        print(
+            "Aucune image du jour dans l'archive webcam - video conservee, "
+            "aucune generation (les photos perimees ne sont plus utilisees)."
+        )
+        return
+
+    if missing:
+        print(f"Cameras ignorees (pas d'image du jour): {', '.join(missing)}")
 
     audio_duration = media_duration(PODCAST_AUDIO)
     subtitle_events = build_video(frames, audio_duration)
@@ -486,6 +512,10 @@ def main() -> None:
         "video": "podcast/today.mp4",
         "audio_duration_seconds": round(audio_duration, 3),
         "frames": frames,
+        "skipped_cameras": missing,
+        "all_frames_from_today": all(
+            frame["captured_at"][:10] == now.date().isoformat() for frame in frames
+        ),
         "subtitles": {
             "source": str(PODCAST_SCRIPT.relative_to(BASE)).replace("\\", "/") if PODCAST_SCRIPT.exists() else None,
             "events": len(subtitle_events),

@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-09",
-  "generated_at": "2026-10-09T13:38:05.899294+02:00",
+  "date": "2026-10-10",
+  "generated_at": "2026-10-10T12:55:47.381995+02:00",
   "favorable_hours": [
     "10:00",
     "11:00",
@@ -20,76 +20,76 @@
     }
   ],
   "peak": {
-    "hour": "14:00",
-    "kt": 23.9,
-    "gkt": 40.4,
-    "dir": 256,
-    "temp": 18.0,
+    "hour": "15:00",
+    "kt": 16.0,
+    "gkt": 27.0,
+    "dir": 277,
+    "temp": 15.5,
     "favorable": true
   },
   "slots": [
     {
       "hour": "10:00",
-      "kt": 21.5,
-      "gkt": 35.2,
-      "dir": 255,
-      "temp": 18.0,
+      "kt": 14.7,
+      "gkt": 24.3,
+      "dir": 293,
+      "temp": 13.8,
       "favorable": true
     },
     {
       "hour": "11:00",
-      "kt": 19.0,
-      "gkt": 32.8,
-      "dir": 259,
-      "temp": 18.2,
+      "kt": 13.8,
+      "gkt": 24.1,
+      "dir": 294,
+      "temp": 14.6,
       "favorable": true
     },
     {
       "hour": "12:00",
-      "kt": 20.1,
-      "gkt": 33.6,
-      "dir": 255,
-      "temp": 18.8,
+      "kt": 15.4,
+      "gkt": 26.5,
+      "dir": 291,
+      "temp": 15.1,
       "favorable": true
     },
     {
       "hour": "13:00",
-      "kt": 21.7,
-      "gkt": 36.2,
-      "dir": 252,
-      "temp": 18.4,
+      "kt": 15.2,
+      "gkt": 27.0,
+      "dir": 289,
+      "temp": 15.3,
       "favorable": true
     },
     {
       "hour": "14:00",
-      "kt": 23.9,
-      "gkt": 40.4,
-      "dir": 256,
-      "temp": 18.0,
+      "kt": 14.8,
+      "gkt": 25.6,
+      "dir": 284,
+      "temp": 15.5,
       "favorable": true
     },
     {
       "hour": "15:00",
-      "kt": 22.6,
-      "gkt": 39.8,
-      "dir": 254,
-      "temp": 18.6,
+      "kt": 16.0,
+      "gkt": 27.0,
+      "dir": 277,
+      "temp": 15.5,
       "favorable": true
     },
     {
       "hour": "16:00",
-      "kt": 22.0,
-      "gkt": 39.5,
-      "dir": 256,
-      "temp": 18.3,
+      "kt": 15.5,
+      "gkt": 26.5,
+      "dir": 277,
+      "temp": 15.3,
       "favorable": true
     },
     {
       "hour": "17:00",
-      "kt": 22.9,
-      "gkt": 41.2,
-      "dir": 254,
-      "temp": 18.2,
+      "kt": 14.3,
+      "gkt": 25.6,
+      "dir": 278,
+      "temp": 15.0,
       "favorable": true
     }
   ],

@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-13T17:09:38.565438+02:00",
+  "timestamp": "2026-10-13T18:06:48.728755+02:00",
   "conditions_ok": true,
-  "wind_kt": 15.6,
-  "wind_dir": 267,
-  "temp_c": 18.8,
+  "wind_kt": 14.2,
+  "wind_dir": 270,
+  "temp_c": 18.1,
   "rain_mm": 0,
-  "kites_detected": 1,
+  "kites_detected": 0,
   "boxes": [
     {
       "x1": 0.8717,

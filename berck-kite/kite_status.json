@@ -1,8 +1,21 @@
 {
-  "timestamp": "2026-10-20T19:21:15.332087+02:00",
-  "conditions_ok": false,
+  "timestamp": "2026-10-21T11:23:03.903282+02:00",
+  "conditions_ok": true,
+  "wind_kt": 16.8,
+  "wind_dir": 207,
+  "temp_c": 12.9,
+  "rain_mm": 0.1,
   "kites_detected": 0,
-  "boxes": [],
+  "boxes": [
+    {
+      "x1": 0.7597,
+      "y1": 0.4346,
+      "x2": 0.7712,
+      "y2": 0.4551,
+      "conf": 0.732
+    }
+  ],
+  "image_url": "https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer/eole/2026/10/16/large/17-00.jpg",
   "last_kite": {
     "camera": "eole",
     "camera_label": "Eole",
@@ -68,10 +81,5 @@
         }
       ]
     }
-  ],
-  "reason": "hors lumiere (08:24-19:21)",
-  "wind_kt": 15.0,
-  "wind_dir": 224,
-  "temp_c": 15.0,
-  "rain_mm": 0
+  ]
 }

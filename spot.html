@@ -142,6 +142,12 @@
         <span class="kite-box kite-box-modal" v-for="(box, i) in modalItem.boxes" :key="i" :style="boxStyle(box, modalItem.boxes, i)">
           <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
         </span>
+        <div class="kite-modal-facts" v-if="modalFacts.length">
+          <div v-for="fact in modalFacts" :key="fact.label">
+            <small>{{ fact.label }}</small>
+            <strong>{{ fact.value }}</strong>
+          </div>
+        </div>
       </div>
       <button class="kite-modal-close" @click.stop="closeModal">×</button>
     </div>

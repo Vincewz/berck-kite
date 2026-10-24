@@ -2,6 +2,13 @@ const { createApp, ref, computed, onMounted } = Vue;
 
 const S3_BASE = 'https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer';
 const MIN_KITE_CONF = 0.5;
+const DIRS16 = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
+
+function dirLabel(deg) {
+  const value = Number(deg);
+  if (deg == null || Number.isNaN(value)) return '';
+  return DIRS16[Math.round(value / 22.5) % 16];
+}
 
 function pad(n) {
   return String(n).padStart(2, '0');
@@ -220,6 +227,38 @@ createApp({
         + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
+    function formatDayLong(ts) {
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    // Petites infos affichées sous l'image quand on ouvre une détection.
+    const modalFacts = computed(() => {
+      const kite = modalItem.value;
+      if (!kite || kite.type === 'live') return [];
+
+      const date = new Date(kite.timestamp);
+      const facts = [
+        { label: 'Jour', value: formatDayLong(kite.timestamp) },
+        { label: 'Heure', value: Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) },
+        { label: 'Caméra', value: kiteCamLabel(kite) },
+        { label: 'Kites', value: String(kite.kites_detected || 0) },
+      ];
+
+      if (kite.wind_kt != null) {
+        const dir = dirLabel(kite.wind_dir);
+        facts.push({ label: 'Vent', value: `${Math.round(kite.wind_kt)} kt${dir ? ' ' + dir : ''}` });
+      }
+      if (kite.temp_c != null) facts.push({ label: 'Température', value: `${Math.round(kite.temp_c)} °C` });
+      if (Number(kite.rain_mm) > 0) facts.push({ label: 'Pluie', value: `${Number(kite.rain_mm).toFixed(1)} mm` });
+
+      const maxConf = Math.max(0, ...(kite.boxes || []).map(box => Number(box.conf) || 0));
+      if (maxConf) facts.push({ label: 'Confiance', value: `${Math.round(maxConf * 100)} %` });
+
+      return facts.filter(fact => fact.value);
+    });
+
     function openDetection(kite) {
       modalItem.value = kite;
       track('Open kite detection', {
@@ -260,6 +299,7 @@ createApp({
       orderedCams,
       detections,
       modalItem,
+      modalFacts,
       liveTimeLabel,
       fallbackCam,
       refreshAll,

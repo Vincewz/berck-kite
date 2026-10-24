@@ -246,6 +246,42 @@
   border: 0;
 }
 
+/* Infos affichées sous l'image d'une détection ouverte */
+.kite-modal-facts {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 26px 18px 14px;
+  background: linear-gradient(180deg, rgba(8,21,34,0), rgba(8,21,34,.88) 55%);
+  color: #fff;
+  pointer-events: none;
+}
+
+.kite-modal-facts div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.kite-modal-facts small {
+  color: rgba(255,255,255,.62);
+  font-size: .6rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.kite-modal-facts strong {
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 @media (max-width: 860px) {
   .spot-hero {
     grid-template-columns: 1fr;

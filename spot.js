@@ -126,7 +126,6 @@ createApp({
             camera_label: kite.camera_label || cameraLabel(camera),
             boxes,
             kites_detected: boxes.length,
-            image_error: false,
           };
         })
         .filter(kite => kite.boxes.length > 0)
@@ -268,8 +267,15 @@ createApp({
       });
     }
 
-    function markDetectionImageError(kite) {
-      kite.image_error = true;
+    // Les archives Skaping purgent les caméras maritime/mer au bout de ~40 jours.
+    // Une détection dont l'image a disparu est retirée de la liste.
+    function dropDetection(kite) {
+      if (modalItem.value === kite) modalItem.value = null;
+      detections.value = detections.value.filter(item => item !== kite);
+      track('Hide unavailable detection', {
+        camera: kite?.camera || '',
+        timestamp: kite?.timestamp || '',
+      });
     }
 
     function openLive(cam) {
@@ -307,7 +313,7 @@ createApp({
       boxStyle,
       formatDateTime,
       openDetection,
-      markDetectionImageError,
+      dropDetection,
       openLive,
       closeModal,
     };

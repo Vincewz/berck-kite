@@ -1,6 +1,7 @@
 const { createApp, ref, computed, onMounted } = Vue;
 
 const S3_BASE = 'https://skaping.s3.gra.io.cloud.ovh.net/berck-sur-mer';
+const MIN_KITE_CONF = 0.5;
 
 function pad(n) {
   return String(n).padStart(2, '0');
@@ -44,17 +45,10 @@ function track(name, data = {}) {
   }
 }
 
-function dateKey(ts) {
-  const d = new Date(ts);
-  return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
-}
-
 createApp({
   setup() {
     const loading = ref(false);
-    const status = ref(null);
-    const lastKites = ref([]);
-    const history = ref([]);
+    const detections = ref([]);
     const modalItem = ref(null);
     const liveTick = ref(Date.now());
     const cams = ref([
@@ -92,36 +86,37 @@ createApp({
       return [...cams.value].sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
     });
 
-    const MIN_KITE_CONF = 0.5;
-
     function confidentBoxes(kite) {
       return Array.isArray(kite?.boxes)
         ? kite.boxes.filter(box => Number(box?.conf || 0) >= MIN_KITE_CONF)
         : [];
     }
 
-    function normalizeStatusKites(data, historyItems = []) {
+    // Liste complète des détections confiantes, de la plus récente à la plus ancienne.
+    function normalizeDetections(statusData, historyItems = []) {
       const entries = [];
-      if (Array.isArray(data?.last_kites)) entries.push(...data.last_kites);
-      if (data?.last_kite) entries.push(data.last_kite);
+      if (Array.isArray(statusData?.last_kites)) entries.push(...statusData.last_kites);
+      if (statusData?.last_kite) entries.push(statusData.last_kite);
       if (Array.isArray(historyItems)) entries.push(...historyItems);
+
+      // Une entrée sans boîtes hérite de celles de la même image déjà rencontrée.
       const boxesByImage = new Map();
       entries.forEach(kite => {
         const boxes = confidentBoxes(kite);
-        if (kite?.image_url && boxes.length) {
-          boxesByImage.set(kite.image_url, boxes);
-        }
+        if (kite?.image_url && boxes.length) boxesByImage.set(kite.image_url, boxes);
       });
+
       const seen = new Set();
       return entries
         .filter(kite => kite?.timestamp && kite?.image_url)
         .map(kite => {
           const ownBoxes = confidentBoxes(kite);
           const boxes = ownBoxes.length ? ownBoxes : (boxesByImage.get(kite.image_url) || []);
+          const camera = kite.camera || cameraFromUrl(kite.image_url);
           return {
             ...kite,
-            camera: kite.camera || cameraFromUrl(kite.image_url),
-            camera_label: kite.camera_label || cameraLabel(kite.camera || cameraFromUrl(kite.image_url)),
+            camera,
+            camera_label: kite.camera_label || cameraLabel(camera),
             boxes,
             kites_detected: boxes.length,
             image_error: false,
@@ -134,8 +129,7 @@ createApp({
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
-        })
-        .slice(0, 3);
+        });
     }
 
     async function fetchJson(url, fallback) {
@@ -171,121 +165,13 @@ createApp({
       ]);
       const statusData = pickLatestStatus([rootStatus, publicStatus]);
       const historyData = pickLongestHistory([rootHistory, publicHistory]);
-      status.value = statusData;
-      history.value = historyData;
-      lastKites.value = normalizeStatusKites(statusData, historyData);
+      detections.value = normalizeDetections(statusData, historyData);
       loading.value = false;
       liveTick.value = Date.now();
     }
 
-    const events = computed(() => {
-      const fromHistory = history.value
-        .filter(e => e && e.timestamp)
-        .map(e => {
-          const boxes = confidentBoxes(e);
-          return {
-            ...e,
-            boxes,
-            camera_label: e.camera_label || cameraLabel(e.camera),
-            kites_detected: boxes.length,
-          };
-        });
-      const known = new Set(fromHistory.map(e => `${e.timestamp}|${e.camera || ''}`));
-      const fromStatus = lastKites.value
-        .filter(e => e && e.timestamp)
-        .filter(e => !known.has(`${e.timestamp}|${e.camera || ''}`))
-        .map(e => {
-          const boxes = confidentBoxes(e);
-          return {
-            ...e,
-            boxes,
-            camera_label: e.camera_label || cameraLabel(e.camera),
-            kites_detected: boxes.length,
-          };
-        });
-      return [...fromHistory, ...fromStatus]
-        .filter(e => e.kites_detected > 0)
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    });
-
-    const totalDetections = computed(() => events.value.reduce((sum, e) => sum + e.kites_detected, 0));
-
-    const activeDays = computed(() => new Set(events.value.map(e => dateKey(e.timestamp)).filter(Boolean)).size);
-
-    const dailyBars = computed(() => {
-      const byDay = new Map();
-      for (const event of events.value) {
-        const key = dateKey(event.timestamp);
-        if (!key) continue;
-        byDay.set(key, (byDay.get(key) || 0) + event.kites_detected);
-      }
-      const rows = [...byDay.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .slice(-14)
-        .map(([key, count]) => ({
-          key,
-          count,
-          label: new Date(`${key}T12:00:00`).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-        }));
-      const max = Math.max(1, ...rows.map(r => r.count));
-      return rows.map(r => ({ ...r, pct: Math.max(6, Math.round((r.count / max) * 100)) }));
-    });
-
-    const hourBars = computed(() => {
-      const counts = new Map();
-      for (let h = 10; h <= 18; h += 1) counts.set(h, 0);
-      for (const event of events.value) {
-        const h = new Date(event.timestamp).getHours();
-        if (counts.has(h)) counts.set(h, counts.get(h) + event.kites_detected);
-      }
-      const max = Math.max(1, ...counts.values());
-      return [...counts.entries()].map(([hour, count]) => ({
-        hour,
-        count,
-        pct: count ? Math.max(12, Math.round((count / max) * 100)) : 5,
-      }));
-    });
-
-    const bestHourLabel = computed(() => {
-      const best = [...hourBars.value].sort((a, b) => b.count - a.count)[0];
-      return best?.count ? `${best.hour}h` : 'à venir';
-    });
-
-    const windRows = computed(() => {
-      const buckets = [
-        { label: '8-12 kt', min: 8, max: 12, count: 0 },
-        { label: '12-18 kt', min: 12, max: 18, count: 0 },
-        { label: '18-25 kt', min: 18, max: 25, count: 0 },
-        { label: '25+ kt', min: 25, max: Infinity, count: 0 },
-      ];
-      for (const event of events.value) {
-        const wind = Number(event.wind_kt);
-        if (!wind) continue;
-        const bucket = buckets.find(b => wind >= b.min && wind < b.max);
-        if (bucket) bucket.count += event.kites_detected;
-      }
-      const rows = buckets.filter(b => b.count > 0);
-      const max = Math.max(1, ...rows.map(r => r.count));
-      return rows.map(r => ({ ...r, pct: Math.max(8, Math.round((r.count / max) * 100)) }));
-    });
-
-    const bestWindLabel = computed(() => {
-      const best = [...windRows.value].sort((a, b) => b.count - a.count)[0];
-      return best ? best.label : 'à venir';
-    });
-
-    const historyWindowLabel = computed(() => {
-      if (!dailyBars.value.length) return 'à venir';
-      return `${dailyBars.value.length} jours`;
-    });
-
     const liveTimeLabel = computed(() => {
       return new Date(liveTick.value).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    });
-
-    const lastRunLabel = computed(() => {
-      const ts = status.value?.timestamp || lastKites.value[0]?.timestamp;
-      return ts ? formatDateTime(ts) : '';
     });
 
     function kiteCamLabel(kite) {
@@ -372,20 +258,9 @@ createApp({
       loading,
       cams,
       orderedCams,
-      status,
-      lastKites,
+      detections,
       modalItem,
-      events,
-      totalDetections,
-      activeDays,
-      dailyBars,
-      hourBars,
-      windRows,
-      bestHourLabel,
-      bestWindLabel,
-      historyWindowLabel,
       liveTimeLabel,
-      lastRunLabel,
       fallbackCam,
       refreshAll,
       kiteCamLabel,

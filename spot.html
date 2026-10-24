@@ -4,20 +4,20 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Spot Live Berck - Webcams, detections kite et historique du spot</title>
-  <meta name="description" content="Spot Live Berck regroupe les webcams du front de mer, les dernieres detections de kites par camera et l'historique d'activite du spot."/>
+  <meta name="description" content="Spot Live Berck regroupe les webcams du front de mer et toutes les detections de kites a Berck-sur-Mer."/>
   <meta name="robots" content="index,follow,max-image-preview:large"/>
   <link rel="canonical" href="https://berck.info/spot.html"/>
   <meta property="og:locale" content="fr_FR"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="Kite Berck"/>
   <meta property="og:title" content="Spot Live Berck - Webcams et detections kite"/>
-  <meta property="og:description" content="Toutes les webcams utiles au kite a Berck-sur-Mer, les dernieres detections YOLO et les tendances du spot."/>
+  <meta property="og:description" content="Toutes les webcams utiles au kite a Berck-sur-Mer et toutes les detections YOLO du spot."/>
   <meta property="og:url" content="https://berck.info/spot.html"/>
   <meta property="og:image" content="https://berck.info/cams/maritime.jpg"/>
   <meta property="og:image:alt" content="Webcam maritime de Berck-sur-Mer"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Spot Live Berck - Webcams et detections kite"/>
-  <meta name="twitter:description" content="Webcams live, dernieres detections de kites et historique d'activite du spot de Berck."/>
+  <meta name="twitter:description" content="Webcams live et toutes les detections de kites a Berck-sur-Mer."/>
   <meta name="twitter:image" content="https://berck.info/cams/maritime.jpg"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -63,20 +63,6 @@
           <p class="spot-kicker">Berck-sur-Mer</p>
           <h1>Spot Live</h1>
         </div>
-        <div class="spot-hero-stats">
-          <div>
-            <span>{{ totalDetections }}</span>
-            <small>kites</small>
-          </div>
-          <div>
-            <span>{{ activeDays }}</span>
-            <small>jours</small>
-          </div>
-          <div>
-            <span>{{ bestHourLabel }}</span>
-            <small>pic</small>
-          </div>
-        </div>
       </header>
 
       <section class="spot-panel spot-live-panel">
@@ -101,13 +87,13 @@
 
       <section class="spot-panel">
         <div class="spot-section-head">
-          <h2>3 dernières détections</h2>
-          <span v-if="lastRunLabel">{{ lastRunLabel }}</span>
+          <h2>Détections</h2>
+          <span>{{ detections.length }} résultat{{ detections.length > 1 ? 's' : '' }}</span>
         </div>
-        <div class="spot-detection-grid" v-if="lastKites.length">
-          <article class="spot-detection-card" v-for="kite in lastKites" :key="kite.timestamp + '|' + kite.image_url">
+        <div class="spot-detection-grid" v-if="detections.length">
+          <article class="spot-detection-card" v-for="kite in detections" :key="kite.timestamp + '|' + kite.image_url">
             <button class="spot-detection-media" type="button" @click="openDetection(kite)">
-              <img :src="kite.image_url" :alt="'Détection ' + kiteCamLabel(kite)" @error="markDetectionImageError(kite)"/>
+              <img :src="kite.image_url" :alt="'Détection ' + kiteCamLabel(kite)" loading="lazy" @error="markDetectionImageError(kite)"/>
               <span class="spot-webcam-offline" v-if="kite.image_error">Image indisponible</span>
               <span class="kite-box" v-for="(box, i) in kite.boxes" :key="i" :style="boxStyle(box, kite.boxes, i)">
                 <span class="kite-box-label">{{ Math.round(box.conf * 100) }}%</span>
@@ -116,87 +102,24 @@
             <div class="spot-detection-meta">
               <strong>{{ kiteCamLabel(kite) }}</strong>
               <span>{{ formatDateTime(kite.timestamp) }}</span>
-              <b>{{ kite.kites_detected }} kite{{ kite.kites_detected > 1 ? 's' : '' }}</b>
+              <b>{{ kite.kites_detected }} kite{{ kite.kites_detected > 1 ? 's' : '' }}{{ kite.wind_kt ? ' · ' + Math.round(kite.wind_kt) + ' kt' : '' }}</b>
             </div>
           </article>
         </div>
         <div class="spot-empty" v-else>
           <strong>Aucune détection publiée</strong>
-          <span>La galerie apparaîtra dès que YOLO pousse un résultat positif.</span>
+          <span>La liste apparaîtra dès que YOLO pousse un résultat positif.</span>
         </div>
-      </section>
-
-      <section class="spot-insights">
-        <article class="spot-panel">
-          <div class="spot-section-head">
-            <h2>Activité par jour</h2>
-            <span>{{ historyWindowLabel }}</span>
-          </div>
-          <div class="spot-bars" v-if="dailyBars.length">
-            <div class="spot-bar-row" v-for="day in dailyBars" :key="day.key">
-              <span>{{ day.label }}</span>
-              <div><i :style="{width: day.pct + '%'}"></i></div>
-              <b>{{ day.count }}</b>
-            </div>
-          </div>
-          <div class="spot-empty compact" v-else>Historique en attente.</div>
-        </article>
-
-        <article class="spot-panel">
-          <div class="spot-section-head">
-            <h2>Heures chaudes</h2>
-            <span>{{ bestHourLabel }}</span>
-          </div>
-          <div class="spot-hour-grid">
-            <div class="spot-hour" v-for="hour in hourBars" :key="hour.hour" :class="{active: hour.count > 0}">
-              <i :style="{height: hour.pct + '%'}"></i>
-              <span>{{ hour.hour }}h</span>
-            </div>
-          </div>
-        </article>
-
-        <article class="spot-panel">
-          <div class="spot-section-head">
-            <h2>Influence météo</h2>
-            <span>{{ bestWindLabel }}</span>
-          </div>
-          <div class="spot-wind-list" v-if="windRows.length">
-            <div class="spot-wind-row" v-for="row in windRows" :key="row.label">
-              <span>{{ row.label }}</span>
-              <div><i :style="{width: row.pct + '%'}"></i></div>
-              <b>{{ row.count }}</b>
-            </div>
-          </div>
-          <div class="spot-empty compact" v-else>Pas encore assez de runs.</div>
-        </article>
-      </section>
-
-      <section class="spot-panel">
-        <div class="spot-section-head">
-          <h2>Journal du spot</h2>
-          <span>{{ events.length }} entrées</span>
-        </div>
-        <div class="spot-timeline" v-if="events.length">
-          <article v-for="event in events.slice(0, 12)" :key="event.timestamp + event.camera">
-            <div>
-              <strong>{{ kiteCamLabel(event) }}</strong>
-              <span>{{ formatDateTime(event.timestamp) }}</span>
-            </div>
-            <b>{{ event.kites_detected }} kite{{ event.kites_detected > 1 ? 's' : '' }}</b>
-            <small v-if="event.wind_kt">{{ Math.round(event.wind_kt) }} kt · {{ event.wind_dir }}°</small>
-          </article>
-        </div>
-        <div class="spot-empty compact" v-else>Les futures détections rempliront ce journal.</div>
       </section>
 
       <footer class="site-footer spot-footer">
         <div class="site-footer-brand">
           <span class="footer-logo">Kite<b>Berck</b></span>
-          <p>Spot Live regroupe les webcams utiles, les dernieres detections et les tendances du kite a Berck.</p>
+          <p>Spot Live regroupe les webcams utiles et toutes les détections de kites à Berck-sur-Mer.</p>
         </div>
         <div class="site-footer-meta">
           <span>Detection YOLO selon conditions favorables</span>
-          <span>Historique enrichi a chaque run</span>
+          <span>Liste mise a jour a chaque run</span>
         </div>
       </footer>
     </main>

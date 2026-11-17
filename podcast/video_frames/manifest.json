@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-17T13:18:43.919382+01:00",
+  "generated_at": "2026-11-17T18:37:14.700291+01:00",
   "sunrise": "2026-11-17T08:10:00+01:00",
   "audio": "podcast/today.mp3",
   "video": "podcast/today.mp4",
-  "audio_duration_seconds": 46.73,
+  "audio_duration_seconds": 46.173,
   "frames": [
     {
       "camera": "baie-d-authie",

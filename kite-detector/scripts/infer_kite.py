@@ -204,8 +204,8 @@ print(f"Fetch meteo Berck ({now.strftime('%H:%M')})...")
 try:
     conditions = current_conditions(now)
 except requests.exceptions.RequestException:
-    print("API meteo indisponible - skip")
-    sys.exit(0)
+    print("::error::Sources météo indisponibles : inférence non effectuée.")
+    sys.exit(1)
 
 wind_kt = conditions["wind_kt"]
 wind_dir = conditions["wind_dir"]

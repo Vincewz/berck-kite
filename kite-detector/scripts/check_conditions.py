@@ -24,10 +24,10 @@ print(f"Verification conditions ({now.strftime('%H:%M')} Paris)...")
 try:
     conditions = current_conditions(now)
 except requests.exceptions.RequestException:
-    print("API meteo indisponible - skip")
+    print("::error::Sources météo indisponibles : conditions inconnues, pas un succès sans détection.")
     set_output("conditions_ok", "false")
     set_output("reason", "API meteo indisponible")
-    sys.exit(0)
+    sys.exit(1)
 
 print(
     f"  Vent : {conditions['wind_kt']:.1f}kt  "

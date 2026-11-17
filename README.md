@@ -27,7 +27,7 @@ Tableau de bord météo kite en temps réel pour Berck-sur-Mer, avec détection 
 | Modèle IA | YOLOv11n (ultralytics) — entraîné sur images Éole annotées |
 | Annotation | Label Studio |
 | Podcast | Gemini + Gemini TTS, secours local eSpeak NG + ffmpeg |
-| Automatisation | GitHub Actions (3 workflows) |
+| Automatisation | GitHub Actions (collecte, détection, prévisions, podcast, maintenance) |
 
 ---
 
@@ -39,7 +39,7 @@ infer_kite.yml       →  10h30 / 14h30 / 17h30  — détection kites (si condit
 podcast.yml          →  06h00  — génère le bulletin audio du jour
 ```
 
-Le workflow de détection est en deux jobs : `check` (conditions météo, ~1s) → `detect` (YOLO, ~3 min) uniquement si conditions réunies. Le cache pip évite de réinstaller torch à chaque run.
+Le workflow de détection est en deux jobs : `check` (conditions météo) → `detect` (YOLO) uniquement si conditions réunies. Le cache pip évite de réinstaller torch à chaque run. Après échec répété de l'API best-match, les prévisions et contrôles météo essaient le point d'accès Open-Meteo Météo-France (modèle différent, mêmes unités). Si les deux échouent, l'Action échoue explicitement : ce n'est pas une observation négative de kites.
 
 ---
 

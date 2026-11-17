@@ -31,15 +31,21 @@ session.mount("https://", HTTPAdapter(max_retries=Retry(
     total=3, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504],
     allowed_methods=["GET"],
 )))
-r = session.get(
-    "https://api.open-meteo.com/v1/forecast"
+query = (
     f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
     "&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m"
-    "&wind_speed_unit=kmh&timezone=Europe/Paris&forecast_days=2",
-    timeout=(10, 30)
+    "&wind_speed_unit=kmh&timezone=Europe/Paris&forecast_days=2"
 )
-r.raise_for_status()
-hr = r.json()["hourly"]
+for endpoint in ("forecast", "meteofrance"):
+    try:
+        r = session.get(f"https://api.open-meteo.com/v1/{endpoint}{query}", timeout=(10, 30))
+        r.raise_for_status()
+        hr = r.json()["hourly"]
+        break
+    except requests.RequestException:
+        if endpoint == "meteofrance":
+            raise
+        print("::warning::Open-Meteo best-match indisponible ; essai du modèle Météo-France.")
 
 slots = []
 for i, t in enumerate(hr["time"]):

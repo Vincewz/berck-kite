@@ -74,7 +74,11 @@ def current_weather_payload():
         "&daily=sunrise,sunset&forecast_days=1"
         "&wind_speed_unit=kmh&timezone=Europe/Paris"
     )
-    return retry_json(url, timeout=20)
+    try:
+        return retry_json(url, timeout=20)
+    except requests.exceptions.RequestException:
+        print("::warning::Open-Meteo best-match indisponible ; essai du modèle Météo-France.")
+        return retry_json(url.replace("/v1/forecast", "/v1/meteofrance"), timeout=20)
 
 
 def archive_weather_payload(start, end):

@@ -2,6 +2,8 @@
 
 import base64
 import copy
+import contextlib
+import io
 import importlib.util
 import tempfile
 import unittest
@@ -51,6 +53,8 @@ class PodcastFallbackTests(unittest.TestCase):
     def setUp(self):
         # Protection globale : même un appel non mocké échoue avant toute connexion.
         self.addCleanup(patch.stopall)
+        # Les erreurs simulées ne doivent pas créer de fausses annotations CI.
+        self.enterContext(contextlib.redirect_stdout(io.StringIO()))
         patch.object(
             requests.sessions.Session, "request",
             side_effect=AssertionError("Tout accès réseau est interdit dans ces tests"),

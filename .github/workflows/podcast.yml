@@ -5,9 +5,14 @@ on:
     - cron: '15 8 * * *'  # Apres le lever du soleil a Berck toute l'annee
   workflow_dispatch:
 
+concurrency:
+  group: podcast-publication
+  cancel-in-progress: false
+
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     permissions:
       contents: write
 
@@ -20,8 +25,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install ffmpeg
-        run: sudo apt-get install -y ffmpeg
+      - name: Install audio tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
 
       - name: Install Python deps
         run: pip install requests
@@ -34,9 +41,13 @@ jobs:
           chmod +x /tmp/realesrgan/realesrgan-ncnn-vulkan
           echo "/tmp/realesrgan" >> "$GITHUB_PATH"
 
+      - name: Test podcast fallback
+        run: python -m unittest discover -s scripts -p 'test_podcast_fallback.py' -v
+
       - name: Generate podcast
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PODCAST_OFFLINE: ${{ vars.PODCAST_OFFLINE }}
         run: python scripts/generate_daily_podcast.py
 
       - name: Generate podcast video

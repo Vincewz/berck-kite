@@ -4,8 +4,11 @@ Analyse les prévisions horaires 10h-18h et écrit kite_forecast.json.
 Lancé à 7h chaque matin — avant les runs de détection horaires.
 """
 import json, requests, sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 MIN_WIND_KT  = 13
@@ -16,19 +19,24 @@ HOUR_END     = 18
 BASE_DIR      = Path(__file__).parent.parent
 FORECAST_FILE = BASE_DIR.parent / "berck-kite" / "kite_forecast.json"
 
-paris_tz = timezone(timedelta(hours=2))
+paris_tz = ZoneInfo("Europe/Paris")
 now      = datetime.now(paris_tz)
 today    = now.strftime("%Y-%m-%d")
 
 def to_kt(kmh): return float(kmh) / 1.852
 def has_east(deg): return 0 < float(deg) % 360 < 180
 
-r = requests.get(
+session = requests.Session()
+session.mount("https://", HTTPAdapter(max_retries=Retry(
+    total=3, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+)))
+r = session.get(
     "https://api.open-meteo.com/v1/forecast"
     f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
     "&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m"
     "&wind_speed_unit=kmh&timezone=Europe/Paris&forecast_days=2",
-    timeout=20
+    timeout=(10, 30)
 )
 r.raise_for_status()
 hr = r.json()["hourly"]
@@ -81,7 +89,9 @@ forecast = {
 }
 
 FORECAST_FILE.parent.mkdir(parents=True, exist_ok=True)
-FORECAST_FILE.write_text(json.dumps(forecast, indent=2, ensure_ascii=False))
+payload = json.dumps(forecast, indent=2, ensure_ascii=False)
+FORECAST_FILE.write_text(payload)
+(BASE_DIR.parent / "kite_forecast.json").write_text(payload)
 
 print(f"Forecast {today}: {len(favorable_hours)}/{len(slots)} créneaux favorables")
 for s in slots:

@@ -5,9 +5,11 @@ Données riches → Gemini Flash → Gemini TTS → ffmpeg mastering
 
 import os, json, subprocess, requests, base64, wave
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
-GEMINI_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
+OFFLINE = os.getenv("PODCAST_OFFLINE", "").lower() in {"1", "true", "yes"}
 BERCK_LAT, BERCK_LON = 50.4, 1.6
 
 BASE          = Path(__file__).parent.parent
@@ -132,11 +134,12 @@ def fetch_all(now: datetime):
     except ValueError:
         cur_idx = 6  # fallback 6h matin
 
-    # Toutes les heures d'aujourd'hui (jusqu'à 22h max)
-    end_idx = min(cur_idx + 18, len(hr["time"]))
+    # La fenêtre du jour ne doit pas déborder sur demain si Actions est retardé.
     hours_today = []
-    for i in range(cur_idx, end_idx):
-        h = hr["time"][i][11:16]
+    for i, timestamp in enumerate(hr["time"]):
+        if not timestamp.startswith(today_str):
+            continue
+        h = timestamp[11:16]
         wv_h = float(mr["wave_height"][i]) if mr.get("wave_height") and i < len(mr["wave_height"]) else 0
         hours_today.append({
             "h": h,
@@ -361,6 +364,64 @@ def text_to_speech(script: str, out_path: Path) -> str:
     print(f"  Gemini TTS Kore OK — {len(pcm)//1024}KB PCM")
     return "Kore"
 
+# ── Secours local : aucune clé, aucun crédit, aucune donnée météo inventée ────
+def fallback_script(data: dict, date_str: str, kite_yesterday: dict | None = None) -> str:
+    n, p, t = data["now"], data["peak"], data["tomorrow"]
+    sentences = [f"Bulletin de Berck-sur-Mer du {date_str}."]
+    if p:
+        sentences.append(
+            f"Sur la journée entre dix et dix-huit heures, le pic de vent est prévu à {p['h']}, "
+            f"avec {p['kt']} nœuds de secteur {p['dir']} et des rafales à {p['gkt']} nœuds. "
+            f"À cette heure, le temps sera {p['weather']}, avec {p['temp']} degrés."
+        )
+    else:
+        sentences.append("Les prévisions horaires de la journée sont indisponibles.")
+    if n.get("offshore") or any(offshore_warning(h["deg"]) for h in data.get("kite_window", [])):
+        sentences.append("Un vent de terre est prévu sur une partie de la journée.")
+    sentences.append(f"Actuellement, les vagues mesurent {n['wave_h']} mètres, pour une période de {n['wave_p']} secondes.")
+    if n.get("sea_temp") is not None:
+        sentences.append(f"La température de l'eau est de {n['sea_temp']} degrés.")
+    for kind, label in (("PM", "pleine mer"), ("BM", "basse mer")):
+        tide = next((td for td in data.get("tides", []) if td["type"] == kind), None)
+        if tide:
+            sentences.append(f"La prochaine {label} est estimée à {tide['timeStr']}, à {tide['h']} mètres.")
+    if kite_yesterday:
+        sentences.append("Quelques kitesurfs à l'eau hier.")
+    sentences.append(
+        f"Demain, le temps sera {t['weather']}, avec {t['temp_min']} à {t['temp_max']} degrés. "
+        f"Le vent de secteur {t['dir']} atteindra {t['kt_max']} nœuds, avec des rafales à {t['gkt_max']} nœuds."
+    )
+    sentences.append("Bonne journée les Berckois.")
+    return " ".join(sentences)
+
+
+def make_script(data: dict, date_str: str, kite_yesterday: dict | None = None) -> tuple[str, bool]:
+    """Le booléen évite un second appel payant si Gemini a déjà échoué."""
+    if GEMINI_KEY and not OFFLINE:
+        try:
+            return generate_script(data, date_str, kite_yesterday), True
+        except (requests.RequestException, RuntimeError):
+            print("::warning::Gemini indisponible : bulletin factuel de secours, sans API payante.")
+    return fallback_script(data, date_str, kite_yesterday), False
+
+
+def make_voice(script: str, out_path: Path, use_gemini: bool) -> str:
+    if use_gemini:
+        try:
+            return text_to_speech(script, out_path)
+        except (requests.RequestException, RuntimeError):
+            print("::warning::Gemini TTS indisponible : voix française locale eSpeak NG (qualité réduite).")
+    else:
+        print("Voix de secours locale eSpeak NG (qualité réduite).")
+    subprocess.run(
+        ["espeak-ng", "-v", "fr-fr", "-s", "155", "-w", str(out_path), "--stdin"],
+        input=script, text=True, check=True, capture_output=True,
+    )
+    if not out_path.is_file() or out_path.stat().st_size <= 44:
+        raise RuntimeError("La synthèse locale n'a pas produit d'audio.")
+    return "eSpeak NG français (secours)"
+
+
 # ── 4. ffmpeg — mastering radio + mix musique ────────────────────────────────
 def mix_audio(voice_path: Path, music_path: Path, output: Path):
     probe = subprocess.run(
@@ -405,7 +466,7 @@ def mix_audio(voice_path: Path, music_path: Path, output: Path):
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    paris_tz = timezone(timedelta(hours=2))
+    paris_tz = ZoneInfo("Europe/Paris")
     now      = datetime.now(paris_tz)
     date_str = date_fr(now)
 
@@ -426,12 +487,12 @@ if __name__ == "__main__":
         print("  Pas de détection kite confiante hier")
 
     print("\nScript Gemini...")
-    script = generate_script(data, date_str, kite_yesterday)
+    script, use_gemini = make_script(data, date_str, kite_yesterday)
     print(f"\n--- SCRIPT ({len(script.split())} mots) ---\n{script}\n---\n")
     (BASE / "podcast" / "tts" / "script.txt").write_text(script, encoding="utf-8")
 
     print("TTS Gemini...")
-    voice = text_to_speech(script, TTS_RAW)
+    voice = make_voice(script, TTS_RAW, use_gemini)
 
     print("\nMix ffmpeg + mastering...")
     mix_audio(TTS_RAW, JINGLE, OUT_FILE)

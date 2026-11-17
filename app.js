@@ -385,7 +385,9 @@ createApp({
           lastKite.value = boxes.length ? { ...data.last_kite, boxes, kites_detected: boxes.length } : null;
         }
         data.boxes = confidentBoxes(data.boxes);
-        data.kites_detected = data.boxes.length;
+        // Les boxes peuvent être celles de last_kite : ne jamais transformer
+        // une observation courante à zéro en détection positive historique.
+        data.kites_detected = Math.min(Math.max(0, Number(data.kites_detected) || 0), data.boxes.length);
         if (!data.timestamp) return;
         const ts = new Date(data.timestamp);
         const today = new Date();

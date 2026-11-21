@@ -12,7 +12,7 @@ Tableau de bord météo kite en temps réel pour Berck-sur-Mer, avec détection 
 
 **Détection kites par IA** — un modèle YOLOv11 surveille la webcam Éole 3 fois par jour (10h30, 14h30, 17h30). Il ne tourne que si les conditions sont réunies : vent ≥ 15 kt, pas de composante Est, température ≥ 3°C. Le résultat s'affiche en badge sur le site et la dernière détection est visible avec les boîtes de détection.
 
-**Podcast quotidien** — bulletin radio planifié à 08h15 UTC (09h15 hiver / 10h15 été), avec retards possibles de GitHub Actions : prévisions du jour (10h–18h), marées estimées, vagues, aperçu du lendemain. Script Gemini + voix Gemini TTS + mastering ffmpeg. En cas de clé absente, crédits épuisés ou panne Gemini : texte factuel construit depuis les mêmes données et voix française locale eSpeak NG (moins naturelle), sans API payante. Si des kites ont été détectés la veille, le bulletin le mentionne.
+**Podcast quotidien** — bulletin radio planifié à 08h15 UTC (09h15 hiver / 10h15 été), avec retards possibles de GitHub Actions : prévisions du jour (10h–18h), marées estimées, vagues, aperçu du lendemain. Script Gemini + voix Gemini TTS + mastering ffmpeg. En cas de clé absente, crédits épuisés ou panne Gemini : texte factuel construit depuis les mêmes données et voix française locale eSpeak NG (moins naturelle), sans API payante. Si des kites ont été détectés la veille, le bulletin le mentionne. Les appels météo et marine ont trois tentatives bornées ; la météo peut basculer sur le modèle Météo-France. Si les données restent indisponibles, la génération échoue sans inventer de conditions ni antidater la vidéo. Le lecteur affiche la date réelle du manifeste, signale une archive et versionne les URL médias pour éviter un ancien cache navigateur.
 
 ---
 
@@ -78,7 +78,8 @@ GEMINI_API_KEY=... python scripts/generate_daily_podcast.py
 PODCAST_OFFLINE=1 python scripts/generate_daily_podcast.py
 
 # Tester le secours sans réseau ni clé
-python -m unittest discover -s scripts -p 'test_podcast_fallback.py' -v
+python -m unittest discover -s scripts -p 'test_podcast_*.py' -v
+node --test scripts/test_podcast_status.cjs
 
 # Lancer une détection manuellement
 python kite-detector/scripts/infer_kite.py

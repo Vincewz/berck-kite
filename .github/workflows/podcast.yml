@@ -42,7 +42,10 @@ jobs:
           echo "/tmp/realesrgan" >> "$GITHUB_PATH"
 
       - name: Test podcast fallback
-        run: python -m unittest discover -s scripts -p 'test_podcast_fallback.py' -v
+        run: python -m unittest discover -s scripts -p 'test_podcast_*.py' -v
+
+      - name: Test podcast date display
+        run: node --test scripts/test_podcast_status.cjs
 
       - name: Generate podcast
         env:

@@ -3,7 +3,7 @@ generate_daily_podcast.py — Lancé chaque matin par GitHub Actions
 Données riches → Gemini Flash → Gemini TTS → ffmpeg mastering
 """
 
-import os, json, subprocess, requests, base64, wave
+import os, json, subprocess, requests, base64, wave, time
 from pathlib import Path
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -98,29 +98,55 @@ def next_tides(from_dt: datetime, count=4):
     return extremes
 
 # ── 1. Fetch — données riches Open-Meteo ─────────────────────────────────────
+def fetch_json(url: str, fallback_url: str | None = None) -> dict:
+    """Retries bornés pour TLS/timeouts/429/5xx, jamais de météo périmée inventée."""
+    urls = [url] + ([fallback_url] if fallback_url else [])
+    for candidate in urls:
+        for attempt in range(3):
+            try:
+                response = requests.get(candidate, timeout=(10, 30))
+                response.raise_for_status()
+                payload = response.json()
+                if not isinstance(payload, dict) or payload.get("error"):
+                    raise ValueError("Réponse météo invalide")
+                return payload
+            except (requests.RequestException, ValueError) as exc:
+                if isinstance(exc, requests.HTTPError) and exc.response is not None:
+                    status = exc.response.status_code
+                    if 400 <= status < 500 and status != 429:
+                        raise
+                if attempt < 2:
+                    time.sleep(2 ** attempt)
+                elif candidate == urls[-1]:
+                    raise
+        print("::warning::Météo best-match indisponible ; essai du modèle Météo-France.")
+    raise RuntimeError("Aucune source météo disponible")
+
+
 def fetch_all(now: datetime):
     paris_str = now.strftime("%Y-%m-%dT%H:00")
     today_str = now.strftime("%Y-%m-%d")
     tomorrow  = (now + timedelta(days=1)).strftime("%Y-%m-%d")
 
     # Météo + vent horaire sur 48h
-    w = requests.get(
+    weather_url = (
         f"https://api.open-meteo.com/v1/forecast"
         f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
         f"&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m,weather_code,apparent_temperature"
         f"&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m,weather_code,precipitation_probability"
         f"&daily=wind_speed_10m_max,wind_gusts_10m_max,weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset"
-        f"&timezone=Europe/Paris&forecast_days=3", timeout=10
-    ).json()
+        f"&timezone=Europe/Paris&forecast_days=3"
+    )
+    w = fetch_json(weather_url, weather_url.replace("/v1/forecast", "/v1/meteofrance"))
 
     # Marine horaire
-    m = requests.get(
+    m = fetch_json(
         f"https://marine-api.open-meteo.com/v1/marine"
         f"?latitude={BERCK_LAT}&longitude={BERCK_LON}"
         f"&current=wave_height,wave_period,wave_direction,sea_surface_temperature"
         f"&hourly=wave_height,wave_period"
-        f"&timezone=Europe/Paris&forecast_days=3", timeout=10
-    ).json()
+        f"&timezone=Europe/Paris&forecast_days=3"
+    )
 
     c  = w["current"]
     mc = m.get("current", {})
@@ -149,7 +175,8 @@ def fetch_all(now: datetime):
             "deg": round(float(hr["wind_direction_10m"][i])),
             "temp": round(float(hr["temperature_2m"][i])),
             "weather": wmo_label(hr["weather_code"][i]),
-            "rain_pct": round(float(hr["precipitation_probability"][i])),
+            "rain_pct": (round(float(hr["precipitation_probability"][i]))
+                         if hr["precipitation_probability"][i] is not None else None),
             "wave_h": round(wv_h, 1),
         })
 

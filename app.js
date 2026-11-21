@@ -369,6 +369,27 @@ createApp({
     const heroBg  = ref(HERO_FALLBACK_BG);
     const kiteDetection = ref(null);
     const lastKite = ref(null);
+    const podcastGeneratedAt = ref(null);
+    const podcastDateLabel = computed(() => {
+      if (!podcastGeneratedAt.value) return 'date non vérifiée';
+      const generated = new Date(podcastGeneratedAt.value);
+      const opts = { timeZone: 'Europe/Paris' };
+      const day = date => date.toLocaleDateString('en-CA', opts);
+      const label = generated.toLocaleDateString('fr-FR', { ...opts, day: 'numeric', month: 'long' });
+      return (day(generated) === day(new Date(tideMs.value)) ? 'du ' : 'archive du ') + label;
+    });
+    const podcastVersion = computed(() => podcastGeneratedAt.value
+      ? '?v=' + encodeURIComponent(podcastGeneratedAt.value) : '');
+    async function fetchPodcastDate() {
+      try {
+        const response = await fetch('/podcast/video_frames/manifest.json', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.generated_at && Number.isFinite(Date.parse(data.generated_at))) {
+          podcastGeneratedAt.value = data.generated_at;
+        }
+      } catch { /* La date inconnue ne doit pas être présentée comme celle du jour. */ }
+    }
     let chart = null, refreshTimer = null, tideTimer = null, heroBgRequest = 0;
 
     // ── Détection kites YOLO (mise à jour quotidienne via GitHub Actions) ────
@@ -835,7 +856,8 @@ createApp({
       fetchAll();
       loadHeroBg();
       fetchKiteStatus();
-      refreshTimer = setInterval(() => { fetchAll(); loadHeroBg(); }, 10 * 60_000);
+      fetchPodcastDate();
+      refreshTimer = setInterval(() => { fetchAll(); loadHeroBg(); fetchPodcastDate(); }, 10 * 60_000);
       tideTimer    = setInterval(() => { tideMs.value = Date.now(); }, 60_000);
     });
     onUnmounted(() => { clearInterval(refreshTimer); clearInterval(tideTimer); });
@@ -885,7 +907,7 @@ createApp({
       kiteModalOpen, kiteModalCanvas, drawKiteBoxes, openKiteModal, closeKiteModal,
       nextDays, weatherForecast, windOrigin, tideNow, waveInfo, seaTemp,
       wgForecast, wgWindBg, wgWindFg, wgIsOffshore,
-      timeAgo, shareToast,
+      timeAgo, shareToast, podcastDateLabel, podcastVersion,
       fetchAll, dirLabel, speedColor, snapUrl, openCam, toKt, shareConditions,
     };
   },
